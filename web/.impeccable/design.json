@@ -1,0 +1,439 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-30T20:41:51+00:00",
+  "title": "Design System: Jejak",
+  "extensions": {
+    "colorMeta": {
+      "nila": {
+        "role": "primary",
+        "displayName": "Nila Indigo",
+        "canonical": "#1e2a4a",
+        "tonalRamp": [
+          "#090d16",
+          "#0f1525",
+          "#151d34",
+          "#1b2643",
+          "#4b556e",
+          "#838a9b",
+          "#bcbfc9",
+          "#e8eaed"
+        ]
+      },
+      "nila-soft": {
+        "role": "primary",
+        "displayName": "Nila Soft",
+        "canonical": "#3a4a75",
+        "tonalRamp": [
+          "#111623",
+          "#1d253a",
+          "#293452",
+          "#344369",
+          "#616e91",
+          "#939bb3",
+          "#c4c9d6",
+          "#ebedf1"
+        ]
+      },
+      "nila-tint": {
+        "role": "primary",
+        "displayName": "Nila Tint",
+        "canonical": "#dfe2ec",
+        "tonalRamp": [
+          "#434447",
+          "#707176",
+          "#9c9ea5",
+          "#c9cbd4",
+          "#e5e8f0",
+          "#edeff5",
+          "#f5f6f9",
+          "#fcfcfd"
+        ]
+      },
+      "soga": {
+        "role": "secondary",
+        "displayName": "Soga Brown",
+        "canonical": "#7a4a28",
+        "tonalRamp": [
+          "#25160c",
+          "#3d2514",
+          "#55341c",
+          "#6e4324",
+          "#956e53",
+          "#b69b89",
+          "#d7c9be",
+          "#f2edea"
+        ]
+      },
+      "soga-deep": {
+        "role": "secondary",
+        "displayName": "Soga Deep",
+        "canonical": "#5a3418",
+        "tonalRamp": [
+          "#1b1007",
+          "#2d1a0c",
+          "#3f2411",
+          "#512f16",
+          "#7b5d46",
+          "#a48f80",
+          "#cec2ba",
+          "#eeebe8"
+        ]
+      },
+      "merah": {
+        "role": "tertiary",
+        "displayName": "Merah Madder",
+        "canonical": "#a8302a",
+        "tonalRamp": [
+          "#320e0d",
+          "#541815",
+          "#76221d",
+          "#972b26",
+          "#b95955",
+          "#cf8d8a",
+          "#e5c1bf",
+          "#f6eaea"
+        ]
+      },
+      "merah-tint": {
+        "role": "tertiary",
+        "displayName": "Merah Tint",
+        "canonical": "#f6dcd6",
+        "tonalRamp": [
+          "#4a4240",
+          "#7b6e6b",
+          "#ac9a96",
+          "#ddc6c1",
+          "#f8e3de",
+          "#faece8",
+          "#fcf4f3",
+          "#fefcfb"
+        ]
+      },
+      "kunyit": {
+        "role": "tertiary",
+        "displayName": "Kunyit Turmeric",
+        "canonical": "#8a5d00",
+        "tonalRamp": [
+          "#291c00",
+          "#452e00",
+          "#614100",
+          "#7c5400",
+          "#a17d33",
+          "#bfa673",
+          "#dcceb2",
+          "#f3efe6"
+        ]
+      },
+      "kunyit-line": {
+        "role": "tertiary",
+        "displayName": "Kunyit Line",
+        "canonical": "#c38a1c",
+        "tonalRamp": [
+          "#3a2908",
+          "#62450e",
+          "#886114",
+          "#b07c19",
+          "#cfa149",
+          "#debf82",
+          "#eddcbb",
+          "#f9f3e8"
+        ]
+      },
+      "mori": {
+        "role": "neutral",
+        "displayName": "Mori Cream",
+        "canonical": "#f3ead6",
+        "tonalRamp": [
+          "#494640",
+          "#7a756b",
+          "#aaa496",
+          "#dbd3c1",
+          "#f5eede",
+          "#f8f3e8",
+          "#fbf9f3",
+          "#fefdfb"
+        ]
+      },
+      "mori-sunk": {
+        "role": "neutral",
+        "displayName": "Mori Sunk",
+        "canonical": "#ebe0c7",
+        "tonalRamp": [
+          "#46433c",
+          "#767064",
+          "#a49d8b",
+          "#d4cab3",
+          "#efe6d2",
+          "#f4eee0",
+          "#f9f6ee",
+          "#fdfcf9"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#fffbf2",
+        "tonalRamp": [
+          "#4c4b49",
+          "#807e79",
+          "#b2b0a9",
+          "#e6e2da",
+          "#fffcf5",
+          "#fffdf8",
+          "#fffefb",
+          "#fffffe"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#2a1a0e",
+        "tonalRamp": [
+          "#0d0804",
+          "#150d07",
+          "#1d120a",
+          "#26170d",
+          "#55483e",
+          "#8a817a",
+          "#bfbab7",
+          "#eae8e7"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "canonical": "#65523f",
+        "tonalRamp": [
+          "#1e1913",
+          "#322920",
+          "#47392c",
+          "#5b4a39",
+          "#847565",
+          "#aaa095",
+          "#d1cbc5",
+          "#f0eeec"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "canonical": "#dccdae",
+        "tonalRamp": [
+          "#423e34",
+          "#6e6657",
+          "#9a907a",
+          "#c6b89d",
+          "#e3d7be",
+          "#ece4d2",
+          "#f4f0e7",
+          "#fcfaf7"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Lead number",
+        "purpose": "One figure per screen."
+      },
+      "headline": {
+        "displayName": "Screen title",
+        "purpose": "Screen titles and verdicts."
+      },
+      "title": {
+        "displayName": "Section",
+        "purpose": "Section heads, day date, amounts."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Reading text, 60-62ch."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Step tabs, state words, captions."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Source chips, tile labels, table heads."
+      }
+    },
+    "shadows": [
+      {
+        "name": "selected-day",
+        "value": "0 0 0 3px #f3ead6, 0 0 0 5.5px #1e2a4a, 0 6px 14px -6px rgb(30 42 74 / .5)",
+        "purpose": "The picked day cell only."
+      },
+      {
+        "name": "focus-halo",
+        "value": "0 0 0 3px #dfe2ec",
+        "purpose": "Input focus."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Cell lift and fill (0.2s / 0.4s), day card rise (0.35s)."
+      },
+      {
+        "name": "state-fade",
+        "value": "0.15s",
+        "purpose": "Hover colour changes on buttons, pills, inputs, tabs."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "none",
+        "purpose": "All animation and transition removed under prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "steps-unmask",
+        "value": "480px"
+      },
+      {
+        "name": "column-max",
+        "value": "640px"
+      },
+      {
+        "name": "print",
+        "value": "A4, 14mm"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main owner action, nila fill.",
+      "html": "<button class=\"ds-btn\">Excel salah, betulkan</button>",
+      "css": ".ds-btn { font-family: var(--font-figtree), Figtree, system-ui, sans-serif; min-height: 48px; padding: 0 16px; border: 0; border-radius: var(--r-sm, 6px); background: var(--nila, #1e2a4a); color: var(--mori, #f3ead6); font-size: 15px; font-weight: 700; cursor: pointer; transition: background .15s, transform .1s; } .ds-btn:hover { background: var(--nila-soft, #3a4a75); } .ds-btn:active { transform: scale(0.98); } .ds-btn:focus-visible { outline: 3px solid var(--nila, #1e2a4a); outline-offset: 2px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Second choice in a pair.",
+      "html": "<button class=\"ds-btn-ghost\">Jelaskan</button>",
+      "css": ".ds-btn-ghost { font-family: var(--font-figtree), Figtree, system-ui, sans-serif; min-height: 48px; padding: 0 16px; border: 0; border-radius: var(--r-sm, 6px); background: transparent; color: var(--nila, #1e2a4a); box-shadow: inset 0 0 0 1.5px var(--nila, #1e2a4a); font-size: 15px; font-weight: 700; cursor: pointer; transition: background .15s; } .ds-btn-ghost:hover { background: var(--nila-tint, #dfe2ec); } .ds-btn-ghost:focus-visible { outline: 3px solid var(--nila, #1e2a4a); outline-offset: 2px; }"
+    },
+    {
+      "name": "Quiet Button",
+      "kind": "button",
+      "refersTo": "button-quiet",
+      "description": "Cancel and file-pick actions.",
+      "html": "<button class=\"ds-btn-quiet\">Batal</button>",
+      "css": ".ds-btn-quiet { font-family: var(--font-figtree), Figtree, system-ui, sans-serif; min-height: 48px; padding: 0 16px; border: 0; border-radius: var(--r-sm, 6px); background: var(--mori-sunk, #ebe0c7); color: var(--nila, #1e2a4a); font-size: 15px; font-weight: 700; cursor: pointer; transition: background .15s; } .ds-btn-quiet:hover { background: var(--line, #dccdae); } .ds-btn-quiet:focus-visible { outline: 3px solid var(--nila, #1e2a4a); outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Paper field with nila focus halo.",
+      "html": "<label class=\"ds-field\"><span>Nama usaha</span><input class=\"ds-input\" value=\"Warung Bu Rina\"></label>",
+      "css": ".ds-field { font-family: var(--font-figtree), Figtree, system-ui, sans-serif; display: grid; gap: 8px; color: var(--ink, #2a1a0e); } .ds-field span { font-weight: 700; } .ds-input { font-family: var(--font-figtree), Figtree, system-ui, sans-serif; min-height: 48px; padding: 12px; font-size: 16px; border: 1.5px solid var(--line, #dccdae); border-radius: var(--r-sm, 6px); background: var(--paper, #fffbf2); transition: border-color .15s; } .ds-input:hover { border-color: #c7b48d; } .ds-input:focus { outline: none; border-color: var(--nila, #1e2a4a); box-shadow: 0 0 0 3px var(--nila-tint, #dfe2ec); }"
+    },
+    {
+      "name": "Choice Pills",
+      "kind": "chip",
+      "refersTo": "choice",
+      "description": "Radio group as pills; selected fills nila.",
+      "html": "<div class=\"ds-choice\"><label class=\"ds-on\">Tidak</label><label>Ya</label></div>",
+      "css": ".ds-choice { font-family: var(--font-figtree), Figtree, system-ui, sans-serif; display: flex; gap: 8px; } .ds-choice label { min-height: 44px; display: inline-flex; align-items: center; padding: 0 16px; border: 1.5px solid var(--line, #dccdae); border-radius: 999px; background: var(--paper, #fffbf2); font-weight: 600; cursor: pointer; transition: background .15s, border-color .15s; } .ds-choice label:hover { border-color: var(--nila-soft, #3a4a75); } .ds-choice label.ds-on { background: var(--nila, #1e2a4a); border-color: var(--nila, #1e2a4a); color: var(--mori, #f3ead6); }"
+    },
+    {
+      "name": "Shell and Step Tabs",
+      "kind": "nav",
+      "refersTo": "step-tab-current",
+      "description": "Sticky nila header; current tab cut into the cream.",
+      "html": "<header class=\"ds-shell\"><div class=\"ds-top\"><b>Jejak</b><span>Warung Bu Rina</span></div><nav class=\"ds-steps\"><a>Cek</a><a>Impor</a><a aria-current=\"page\">Cocokkan</a><a>Paket</a></nav></header>",
+      "css": ".ds-shell { font-family: var(--font-figtree), Figtree, system-ui, sans-serif; background: var(--nila, #1e2a4a); color: var(--mori, #f3ead6); padding: 12px 16px 0; } .ds-top { display: flex; justify-content: space-between; align-items: baseline; } .ds-top b { font-size: 22px; font-weight: 800; } .ds-top span { font-size: 13px; font-weight: 600; color: #c9cee0; } .ds-steps { display: flex; gap: 2px; margin-top: 8px; } .ds-steps a { padding: 8px 10px; font-size: 13px; font-weight: 700; color: #c9cee0; border-radius: 6px 6px 0 0; cursor: pointer; transition: color .15s; } .ds-steps a:hover { color: var(--mori, #f3ead6); } .ds-steps a[aria-current] { background: var(--mori, #f3ead6); color: var(--nila, #1e2a4a); }"
+    },
+    {
+      "name": "Day Cells",
+      "kind": "custom",
+      "refersTo": "day-cell-cocok",
+      "description": "Earned Fill Rule: soga fill confirms, outlines are not yet, nila-tint is explained.",
+      "html": "<div class=\"ds-month\"><button class=\"ds-cell ds-cocok\">1</button><button class=\"ds-cell ds-selisih\">12</button><button class=\"ds-cell ds-cek\">20</button><button class=\"ds-cell ds-menunggu\">26</button><button class=\"ds-cell ds-dijelaskan\">19<svg viewBox=\"0 0 20 20\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4.5 10.5l3.5 3.5 7.5-8\"/></svg></button></div>",
+      "css": ".ds-month { font-family: var(--font-figtree), Figtree, system-ui, sans-serif; display: grid; grid-template-columns: repeat(5, 56px); gap: 5px; background: var(--mori, #f3ead6); padding: 8px; } .ds-cell { font-family: var(--font-figtree), Figtree, system-ui, sans-serif; aspect-ratio: 1; border: 0; border-radius: 6px; padding: 5px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; font-size: 13px; font-weight: 800; cursor: pointer; transition: transform .2s cubic-bezier(0.16,1,0.3,1), background-color .4s cubic-bezier(0.16,1,0.3,1); } .ds-cell:active { transform: scale(0.94); } .ds-cell:focus-visible { outline: 3px solid var(--nila, #1e2a4a); outline-offset: 2px; } .ds-cocok { background: var(--soga, #7a4a28); color: var(--mori, #f3ead6); } .ds-selisih { background: var(--paper, #fffbf2); box-shadow: inset 0 0 0 2.5px var(--merah, #a8302a); color: var(--merah, #a8302a); } .ds-cek { background: var(--paper, #fffbf2); color: var(--kunyit, #8a5d00); outline: 2px dashed var(--kunyit-line, #c38a1c); outline-offset: -2px; } .ds-menunggu { background: transparent; box-shadow: inset 0 0 0 1.5px var(--line, #dccdae); color: var(--muted, #65523f); } .ds-dijelaskan { background: var(--nila-tint, #dfe2ec); color: var(--nila, #1e2a4a); }"
+    },
+    {
+      "name": "Source Chips",
+      "kind": "chip",
+      "refersTo": "source-chip",
+      "description": "Names the Excel cell or statement line behind a figure.",
+      "html": "<div class=\"ds-src\"><span><svg viewBox=\"0 0 20 20\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5.5 2.75h6l3.75 3.75v10.75h-9.75z\"/><path d=\"M11.5 2.75v3.75h3.75\"/></svg>Penjualan Harian C13</span><span><svg viewBox=\"0 0 20 20\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 8h14L10 3.5z\"/><path d=\"M5 8v6.5M8.3 8v6.5M11.7 8v6.5M15 8v6.5M3 16.75h14\"/></svg>Mutasi baris 13</span></div>",
+      "css": ".ds-src { font-family: var(--font-figtree), Figtree, system-ui, sans-serif; display: flex; flex-wrap: wrap; gap: 8px; background: var(--paper, #fffbf2); padding: 12px; } .ds-src span { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; padding: 4px 8px; border-radius: 4px; background: var(--mori, #f3ead6); color: var(--soga-deep, #5a3418); }"
+    },
+    {
+      "name": "Lead Number",
+      "kind": "custom",
+      "description": "One 44px soga figure per screen with a muted phrase on its baseline.",
+      "html": "<div class=\"ds-lead\"><b>17/31</b><span>hari cocok dengan bank</span></div>",
+      "css": ".ds-lead { font-family: var(--font-figtree), Figtree, system-ui, sans-serif; display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 12px; font-variant-numeric: tabular-nums; } .ds-lead b { font-size: 44px; line-height: 1.05; font-weight: 800; letter-spacing: -0.02em; color: var(--soga, #7a4a28); } .ds-lead span { color: var(--muted, #65523f); font-weight: 600; font-size: 15px; }"
+    },
+    {
+      "name": "Day Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Paper card, line border, no shadow.",
+      "html": "<article class=\"ds-card\"><h2>Senin, 12 Oktober</h2><p>Di Excel Rp475.000, bank mencairkan Rp173.775.</p></article>",
+      "css": ".ds-card { font-family: var(--font-figtree), Figtree, system-ui, sans-serif; background: var(--paper, #fffbf2); border: 1.5px solid var(--line, #dccdae); border-radius: 10px; padding: 16px; color: var(--ink, #2a1a0e); } .ds-card h2 { margin: 0; font-size: 18px; font-weight: 800; } .ds-card p { margin: 8px 0 0; font-size: 15px; line-height: 1.5; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Colour Taking Hold",
+    "overview": "**Creative North Star: \"Colour Taking Hold\"**\n\nJejak is a working tool for warung owners on low-end Android phones, written in informal Bahasa Indonesia (\"kamu\"). The system reads like cloth dyed in stages: a cream mori ground, an indigo (nila) shell that holds the app, and soga brown that only appears where the bank has confirmed something. Verification is shown as colour taking hold. A confirmed day is a solid fill. A day that isn't confirmed stays as an open outline until the owner fixes or explains it.\n\nEverything is flat. The natural-dye colours are used only as plain fills and strokes. There is no textile pattern, motif or texture anywhere: the user rejected batik ornament outright, so the dye heritage lives in the colour alone. The density suits an Operate tool: one leading number per screen, a single 640px column, 48px touch targets, and tabular figures on every rupiah.\n\nTrust comes from showing sources. Every number points back to where it came from (an Excel cell or a bank statement line), and the owner makes every decision. The interface never suggests the bank has approved anything.",
+    "keyCharacteristics": [
+      "Mori cream ground, nila shell and primary actions, soga reserved for bank-confirmed states.",
+      "Status is carried by fill versus outline, never by colour alone.",
+      "One 44px soga lead number per screen. Rupiah figures always tabular.",
+      "Source chips under every figure. Flat surfaces, bordered rather than shadowed.",
+      "Informal Bahasa (\"kamu\"), sentence case, no uppercase labels.",
+      "No raster assets ship. The only image-like elements are a 20px hand-drawn line icon set and the favicon, so there is no image provenance to record."
+    ],
+    "rules": [
+      {
+        "name": "The Earned Fill Rule",
+        "body": "Solid soga means the bank confirms it. Nothing else may be filled soga. Anything not yet confirmed is an outline: solid merah = selisih, dashed kunyit = perlu dicek, faint line = belum bisa dicek. A nila-tint fill (with a check icon in the cell) means the owner explained it.",
+        "section": "colors"
+      },
+      {
+        "name": "The Nila Is Action Rule",
+        "body": "Indigo frames the app and marks what the owner can do. It never stands for a verification state, so a button can never be mistaken for a status.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular Rupiah Rule",
+        "body": "`font-variant-numeric: tabular-nums` is set on the body, so every figure lines up. Never turn it off.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Number Rule",
+        "body": "Each screen leads with at most one display-size figure. Everything else steps down to title size or smaller.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat At Rest Rule",
+        "body": "Surfaces never cast shadows at rest. A shadow only means \"this is the one you picked.\"",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** fill soga only where the bank confirms, and show every other status as an outline (merah solid, kunyit dashed, faint line) or the nila-tint \"explained\" fill.",
+      "**Do** put a source chip (Excel sheet and cell, or statement line) beside every number the owner is asked to trust.",
+      "**Do** lead each screen with at most one 44px figure, paired with a muted phrase on the same baseline.",
+      "**Do** write in informal Bahasa (\"kamu\"), in sentence case, and phrase outcomes as the owner's decision.",
+      "**Do** keep touch targets at least 44px (48px for buttons and inputs) and inputs at 16px text.",
+      "**Do** carry state in words as well as shape: in accessible names, in the legend, and in gate state labels."
+    ],
+    "donts": [
+      "**Don't** add any batik pattern, motif, texture or ornament. The natural-dye colours appear as flat fills only.",
+      "**Don't** use green/red status chips or a white fintech card list. Status is fill versus outline in the natural-dye palette.",
+      "**Don't** fill an area with merah. Red is an outline or text.",
+      "**Don't** add shadows to surfaces at rest, or add gradients or glass.",
+      "**Don't** use wording or colour that implies the bank has approved the loan.",
+      "**Don't** add uppercase eyebrow or kicker labels above titles."
+    ]
+  }
+}

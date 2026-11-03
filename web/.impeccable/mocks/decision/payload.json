@@ -1,0 +1,98 @@
+{
+  "title": "Pilih dunia visual Jejak",
+  "question": "The roll assigned Papan Warung. Keep it, take an alternate, or re-roll.",
+  "options": [
+    {
+      "id": "assigned", "kind": "assigned", "label": "Papan Warung", "kicker": "THE ROLL",
+      "lineage": "hand-painted warung and kios signage (cat tangan)",
+      "thesis": "Each day's sales painted like a warung price board, where Excel and bank fuse into one plate when they agree.",
+      "palette": ["#1f6b3a", "#f6c519", "#d23a2a", "#f7f3ea", "#1a1a17"],
+      "materials": ["flat enamel sign paint", "hand-lettered numerals"],
+      "viewport": "Cocokkan: green step header, month tally strip (27 cocok, 3 selisih, 1 cek), then day rows; each row is a split plate of Excel vs bank that fuses green when matched and splits with the gap painted red.",
+      "risk": "Painted-sign energy tips into kitsch if it reaches past type, palette and the plate.",
+      "raised": [
+        {"from": "challenger-timetable", "raise": "One numeral size across the reconciliation list; rank comes from weight, reversal and colour, never size."},
+        {"from": "challenger-monochrome", "raise": "Every verdict sits beside its proof: Excel cell and statement line print inline under each plate."},
+        {"from": "challenger-streaming", "raise": "One day open at a time; the rest of the month stays quiet around it."},
+        {"from": "challenger-manual", "raise": "Each of the six steps owns one sign colour, carried in its tab and header."},
+        {"from": "challenger-ikeda", "raise": "Tabular figures on every rupiah amount, so columns align digit for digit."}
+      ],
+      "html": ".impeccable/mocks/decision/assigned.html", "htmlFrame": "390x844"
+    },
+    {
+      "id": "model-pick", "kind": "pick", "label": "Nota Rangkap", "kicker": "IMPECCABLE’S PICK",
+      "lineage": "carbon-copy nota books from the toko alat tulis",
+      "thesis": "Excel is the white copy, the bank is the carbon: where the two line up, the record is true.",
+      "palette": ["#fbfaf6", "#2b3a8c", "#f4c9cf", "#f5e7a1", "#c4302b"],
+      "materials": ["carbon-blue ballpoint", "pink and yellow copy stock"],
+      "viewport": "Cocokkan as stacked copies: the bank carbon sits under each Excel day, offset where they disagree, a red stamp on the gap.",
+      "risk": "The familiar paper metaphor most runs land on, and close to the accounting feel you asked to avoid.",
+      "html": ".impeccable/mocks/decision/model-pick.html", "htmlFrame": "390x844"
+    },
+    {
+      "id": "challenger-transit", "kind": "challenger", "catalogId": "wayfinding-cartography-signage-midnight-transit-diagram",
+      "label": "Jalur Uang", "verdict": "competitive",
+      "lineage": "metro line diagrams in enamel",
+      "thesis": "The month as two lines, Excel and bank, meeting at settlement stations.",
+      "palette": ["#12204a", "#f2efe6", "#d7372c", "#2f6fd6", "#f0a523", "#2f9b55"],
+      "materials": ["midnight enamel", "porcelain station ticks"],
+      "viewport": "Cocokkan as a vertical line diagram: Fri to Sun QRIS branches merge into a Monday interchange; a red break marks where the lines fail to meet.",
+      "case": "Fuses well: weekend QRIS merging into Monday settlement is literally an interchange. Loses on audience: dark enamel reads tech, not warung.",
+      "risk": "A dark ground at noon on a cheap phone; the diagram crowds a 360px screen.",
+      "html": ".impeccable/mocks/decision/challenger-transit.html", "htmlFrame": "390x844",
+      "hero": "https://impeccable.style/worlds/cards/wayfinding-cartography-signage-midnight-transit-diagram-hero.webp"
+    },
+    {
+      "id": "challenger-timetable", "kind": "challenger", "catalogId": "rw-timetable-slide-rack", "label": "Timetable Slide Rack", "verdict": "declined",
+      "lineage": "1971 pocket airline timetables", "thesis": "Rank by weight, case and reversal at one type size.",
+      "palette": ["#e0a526", "#2c3440", "#f3ecd8", "#d23a1f", "#1f6a43"], "materials": ["tinted glass slides", "goldenrod stock"],
+      "viewport": "Raked slides travelling sideways.", "risk": "An 11-degree rake fights a phone list.",
+      "case": "Owners don't recognise airline timetables, and the rake hurts scanning.", "kept": "One numeral size; rank from weight and reversal.",
+      "hero": "https://impeccable.style/worlds/cards/rw-timetable-slide-rack-hero.webp"
+    },
+    {
+      "id": "challenger-monochrome", "kind": "challenger", "catalogId": "digital-design-canon-monochrome-product-marketing", "label": "Monochrome Product", "verdict": "declined",
+      "lineage": "software marketing canon", "thesis": "Every claim paired with its proof.",
+      "palette": ["#fafafa", "#111111", "#4f46e5"], "materials": ["neutral scale", "framed screenshots"],
+      "viewport": "Claim and proof pairs.", "risk": "A grey screen reads as accounting software.",
+      "case": "A marketing form, and grey is the accounting look you ruled out.", "kept": "Every verdict sits beside its proof.",
+      "hero": "https://impeccable.style/worlds/cards/digital-design-canon-monochrome-product-marketing-hero.webp"
+    },
+    {
+      "id": "challenger-streaming", "kind": "challenger", "catalogId": "pop-culture-shelf-streaming-title-card-wall", "label": "Title Card Wall", "verdict": "declined",
+      "lineage": "streaming catalog rows", "thesis": "The focused item grows; the rest dims.",
+      "palette": ["#141414", "#e50914", "#ffffff"], "materials": ["poster tiles", "dimmed rows"],
+      "viewport": "Horizontal rows of tiles.", "risk": "Entertainment register for money records.",
+      "case": "Days aren't posters; horizontal rows hide the month.", "kept": "One day open at a time.",
+      "hero": "https://impeccable.style/worlds/cards/pop-culture-shelf-streaming-title-card-wall-hero.webp"
+    },
+    {
+      "id": "challenger-manual", "kind": "challenger", "catalogId": "rw-manual-acetate-tab-board", "label": "Acetate Tab Manual", "verdict": "declined",
+      "lineage": "boxed software manuals", "thesis": "A hue per section on a stepped tab rail.",
+      "palette": ["#e2672b", "#f2c419", "#3c9a3c", "#1f8a8a", "#2e46b8"], "materials": ["milk acetate", "coloured divider board"],
+      "viewport": "Tabbed divider pages.", "risk": "Layered acetate is heavy on low-end phones.",
+      "case": "A foreign artifact with costly layering.", "kept": "Each step owns one colour.",
+      "hero": "https://impeccable.style/worlds/cards/rw-manual-acetate-tab-board-hero.webp"
+    },
+    {
+      "id": "challenger-ikeda", "kind": "challenger", "catalogId": "ikeda-datamatics", "label": "Datamatics", "verdict": "declined",
+      "lineage": "data-sublime installation art", "thesis": "Dense tabular numerals in pure black and white.",
+      "palette": ["#000000", "#ffffff"], "materials": ["barcode fields", "monospace numerics"],
+      "viewport": "Strobing data columns.", "risk": "Hostile and cold for an owner's own money.",
+      "case": "Art-gallery coldness with no audience link.", "kept": "Tabular figures on every amount.",
+      "hero": "https://impeccable.style/worlds/cards/ikeda-datamatics-hero.webp"
+    }
+  ],
+  "reroll": {"registers": ["safer", "bolder"]},
+  "buildPath": {"value": "code"},
+  "canon": true,
+  "canonCard": {
+    "kind": "canon", "label": "The category standard",
+    "thesis": "A clean white fintech card app with a green accent, executed impeccably.",
+    "palette": ["#ffffff", "#111827", "#16a34a"], "materials": ["rounded cards", "soft shadows"],
+    "viewport": "A summary card, then a list of day cards with status chips.",
+    "risk": "Reads like a bank or pinjol app, which you asked to avoid.",
+    "html": ".impeccable/mocks/decision/canon.html", "htmlFrame": "390x844"
+  },
+  "steer": true
+}

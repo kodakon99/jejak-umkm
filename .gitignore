@@ -1,0 +1,5 @@
+.DS_Store
+# Third-party internal document used only as a format reference; never publish.
+TSEL_*.docx
+# Names interviewees who did not agree to be named publicly; shared on request only.
+PRD*.pdf

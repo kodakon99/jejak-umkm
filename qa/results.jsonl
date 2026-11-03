@@ -1,0 +1,74 @@
+{"id":"IMP-001 template A maps sheets","actual":["Penjualan Harian:sales:1","Pengeluaran:expense:1"],"ok":true}
+{"id":"IMP-002 template B maps sheets","actual":["Kas:kas:4"],"ok":true}
+{"id":"IMP-003 no Tanggal column","actual":0,"ok":true}
+{"id":"IMP-004 empty workbook (header only)","actual":0,"ok":true}
+{"id":"IMP-005 header at row 15 (limit)","actual":1,"ok":true}
+{"id":"IMP-006 header at row 16 (limit+1)","actual":0,"ok":true}
+{"id":"IMP-007 impossible date 31/02/2026","actual":"2026-02-31","ok":false}
+{"id":"IMP-008 month 13 13/13/2026","actual":"2026-13-13","ok":false}
+{"id":"IMP-009 reconcile survives impossible date","actual":1,"ok":true}
+{"id":"IMP-010 negative sales amount accepted","actual":-500000,"ok":false}
+{"id":"IMP-011 text amount 'Rp175.000'","actual":175000,"ok":true}
+{"id":"IMP-012 text amount 'abc' (non-numeric)","actual":0,"ok":false}
+{"id":"IMP-013 'Cashback' header read as cash","actual":"Cashback","ok":false}
+{"id":"IMP-014 unicode/emoji sheet + desc","actual":{"date":"2026-10-01","channel":"cash","amount":5000,"item":"Jual kopi ☕ — Bu Ñ","sig":"[\"01/10/2026\",\"Jual kopi ☕ — Bu Ñ\",5000]","confidence":0.9,"source":{"file":"x.xlsx","sheet":"Kas 💰","cell":"C2"}},"ok":true}
+{"id":"IMP-015 text file renamed .xlsx","actual":1,"ok":false}
+{"id":"IMP-016 random bytes as .xlsx","actual":0,"ok":true}
+{"id":"IMP-017 zero-byte file","actual":0,"ok":true}
+{"id":"IMP-018 path-traversal file name kept verbatim","actual":"../../etc/passwd.xlsx","ok":true}
+{"id":"IMP-019 US date 10/31/2026","actual":"2026-31-10","ok":false}
+{"id":"IMP-020 dd-mm-yyyy and ISO accepted","actual":["2026-10-05","2026-10-05","2026-10-05"],"ok":true}
+{"id":"IMP-030 sample CSV lines","actual":{"lines":34,"business":29,"excluded":4},"ok":true}
+{"id":"IMP-031 semicolon-delimited CSV","actual":0,"ok":false}
+{"id":"IMP-032 short line (2 fields)","actual":{"error":"TypeError: Cannot read properties of undefined (reading 'replace')"},"ok":false}
+{"id":"IMP-033 header only (no dated lines)","actual":0,"ok":true}
+{"id":"IMP-034 'TRF KE TOKO BUNGA MAWAR' (supplier)","actual":"interest","ok":false}
+{"id":"IMP-035 'TRF KE UD KELUARGA JAYA' (supplier)","actual":"personal","ok":false}
+{"id":"IMP-036 QRIS settlement crossing year","actual":[],"ok":false}
+{"id":"IMP-037 QRIS credit without date range","actual":[],"ok":true}
+{"id":"IMP-038 BOM at file start","actual":1,"ok":true}
+{"id":"IMP-039 escaped quote in desc","actual":{"line":2,"date":"2026-10-02","desc":"\"TRF \"\"BU RINA\"\"\"","kind":"other","business":false,"amount":5000,"dir":"CR","source":{"file":"b.csv","line":2}},"ok":true}
+{"id":"IMP-040 mutasi with Indonesian decimal 1.000,50","actual":1000.5,"ok":true}
+{"id":"IMP-041 lowercase cr/db direction","actual":"","ok":false}
+{"id":"REC-001 template A planted errors","actual":["duplicate@2026-10-23","blank@2026-10-19","qris_mismatch@2026-10-12","cash_week@2026-10-19+2026-10-20+2026-10-21+2026-10-22+2026-10-23+2026-10-24+2026-10-25"],"ok":true}
+{"id":"REC-002 template B clean","actual":0,"ok":true}
+{"id":"REC-003 empty statement → evidence still 'cocok'?","actual":{"flags":0,"statuses":["menunggu"],"months":1},"ok":false}
+{"id":"REC-004 cash-only Excel, 3 months, statement with no deposits → sales_evidence","actual":{"flags":0,"months":3,"gate":"lulus"},"ok":false}
+{"id":"REC-005 Excel months outside statement period","actual":{"kinds":["qris_missing","cash_week"],"n":32},"ok":true}
+{"id":"REC-006 QRIS credit with no covers → flag with empty dates","actual":{"dates":[],"title":"QRIS  beda dengan bank"},"ok":false}
+{"id":"REC-007 QRIS tolerance boundary (exactly Rp1,000 off)","actual":{"at":0,"over":1},"ok":true}
+{"id":"REC-008 two cash deposits same day","actual":["cash-98"],"ok":true}
+{"id":"REC-009 duplicate row typed 3 times","actual":[3],"ok":true}
+{"id":"REC-010 supplier matched by expense ±3 days","actual":{"d3":0,"d4":1},"ok":true}
+{"id":"REC-011 2,000 rows / 1,000 lines latency (spec ≤300 ms)","actual":265,"ok":true}
+{"id":"EVA-001 all clear → siap 100%","actual":{"overall":"siap","passed":11,"percent":100},"ok":true}
+{"id":"EVA-002 kol2 bad until 2026-05-01 (6 months back)","actual":{"status":"lulus","readyDate":null,"reason":"Kol 2 terakhir sudah lewat 6 bulan."},"ok":true}
+{"id":"EVA-003 kol2 bad until 2026-06-01 (5 months back)","actual":{"status":"blokir","readyDate":"2026-12-01","reason":"SLIK kamu ada kol 2 atau lebih buruk dalam 6 bulan terakhir."},"ok":true}
+{"id":"EVA-004 kol2 with no bad-until date","actual":{"status":"blokir","readyDate":"2027-05-02","reason":"SLIK kamu ada kol 2 atau lebih buruk dalam 6 bulan terakhir."},"ok":true}
+{"id":"EVA-005 kol2 bad-until malformed '2026-08' (raw month input)","actual":{"status":"blokir","readyDate":"2027-02-01","reason":"SLIK kamu ada kol 2 atau lebih buruk dalam 6 bulan terakhir."},"ok":true}
+{"id":"EVA-006 kol2 bad-until in the future","actual":{"status":"blokir","readyDate":"2027-09-01","reason":"SLIK kamu ada kol 2 atau lebih buruk dalam 6 bulan terakhir."},"ok":true}
+{"id":"EVA-007 statementMonths NaN","actual":{"status":"lulus","readyDate":null,"reason":"Rekening koran 6 bulan tersedia."},"ok":false}
+{"id":"EVA-008 monthsOperating NaN","actual":{"status":"lulus","readyDate":null,"reason":"Usaha berjalan NaN bulan."},"ok":false}
+{"id":"EVA-009 monthsOperating negative -3","actual":{"status":"blokir","readyDate":"2027-08-02","reason":"Usaha baru berjalan -3 bulan."},"ok":true}
+{"id":"EVA-010 monthsOperating 5.5 (fractional)","actual":{"status":"blokir","readyDate":"2026-11-02","reason":"Usaha baru berjalan 5.5 bulan."},"ok":false}
+{"id":"EVA-011 operating 5/6/11/12 boundary","actual":["blokir","hati","hati","lulus"],"ok":true}
+{"id":"EVA-012 statements 5/6 boundary","actual":["blokir","lulus"],"ok":true}
+{"id":"EVA-013 loan 100,000,000 / 100,000,001 no asset","actual":["lulus","hati"],"ok":true}
+{"id":"EVA-014 loanAmount 0 and negative","actual":["Jumlah pinjaman dalam rentang KUR Mikro.","Jumlah pinjaman dalam rentang KUR Mikro."],"ok":true}
+{"id":"EVA-015 unknown enum slikOwner 'macet'","actual":{"status":"lulus","readyDate":null,"reason":"SLIK kamu bersih."},"ok":false}
+{"id":"EVA-016 unknown enum onlineLoans 'TELAT' (case)","actual":{"status":"lulus","readyDate":null,"reason":"Tidak ada pinjol atau paylater."},"ok":false}
+{"id":"EVA-017 dhn as string 'false'","actual":{"status":"blokir","readyDate":null,"reason":"Nama kamu ada di DHN (cek kosong)."},"ok":false}
+{"id":"EVA-018 end-of-month: operating 3 months on 2026-08-31","actual":"2026-12-01","ok":false}
+{"id":"EVA-019 reconciled 3, openFlags 0 vs 1","actual":["lulus","hati"],"ok":true}
+{"id":"EVA-020 openFlags negative -1","actual":{"status":"lulus","readyDate":null,"reason":"3 bulan penjualan sudah cocok dengan bank."},"ok":true}
+{"id":"EVA-021 as_of malformed '02/11/2026'","actual":{"error":"RangeError: Invalid time value"},"ok":false}
+{"id":"EVA-022 extra unknown field ignored","actual":"siap","ok":true}
+{"id":"EVA-023 undated + dated blockers → readyDate","actual":{"overall":"belum_siap","readyDate":"2027-02-02","undated":1},"ok":true}
+{"id":"EVA-024 action plan order","actual":["nib","statements","online_loans"],"ok":true}
+{"id":"EVA-025 latency 10,000 evaluations","actual":0.0018,"ok":true}
+{"id":"EVA-026 deterministic (same input twice)","actual":true,"ok":true}
+{"id":"PKG-001 profile text from template B","actual":"Warung milik Rina Fiktif, berjalan 24 bulan. Dalam 31 hari tercatat penjualan Rp27.640.000: tunai Rp17.430.000 (63%) dan QRIS Rp10.210.000, rata-rata Rp891.613 per hari. 25 dari 31 hari sudah cocok dengan mutasi bank. Supplier utama: PT Contoh.","ok":true}
+{"id":"PKG-002 profile text with zero days","actual":"Warung milik Rina Fiktif, berjalan 24 bulan. Dalam 0 hari tercatat penjualan Rp0: tunai Rp0 (NaN%) dan QRIS Rp0, rata-rata RpNaN per hari. 0 dari 0 hari sudah cocok dengan mutasi bank. 25 catatan selisih dicantumkan di lampiran. Supplier utama: PT Contoh.","ok":false}
+{"id":"PKG-003 profile text with all-zero sales","actual":"Warung milik Rina Fiktif, berjalan 24 bulan. Dalam 1 hari tercatat penjualan Rp0: tunai Rp0 (NaN%) dan QRIS Rp0, rata-rata Rp0 per hari. 0 dari 1 hari sudah cocok dengan mutasi bank. 25 catatan selisih dicantumkan di lampiran. Supplier utama: PT Contoh.","ok":false}
+{"id":"PKG-004 no score or percent in pack narrative","actual":"Warung milik Rina Fiktif, berjalan 24 bulan. Dalam 31 hari tercatat penjualan Rp27.420.000: tunai Rp16.910.000 (62%) dan QRIS Rp10.510.000, rata-rata Rp884.516 per hari. 17 dari 31 hari sudah cocok dengan mutasi bank. 4 catatan selisih dicantumkan di lampiran. Supplier utama: PT Contoh.","ok":true}
+{"id":"PKG-005 HTML in owner name rendered as text","actual":"Warung milik <img src=x onerror=alert(1)>, berjalan 24 bulan","ok":true}

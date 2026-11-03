@@ -1,0 +1,14 @@
+const WEB = process.argv[2];
+const { readExcel, readBankCsv } = await import(`${WEB}/lib/engine/read.ts`);
+const { reconcile } = await import(`${WEB}/lib/engine/reconcile.ts`);
+const XLSX = await import(`${WEB}/node_modules/xlsx/xlsx.mjs`);
+const { readFileSync } = await import("node:fs");
+const bank = readBankCsv("b.csv", readFileSync(`${WEB}/../bank_statement_sample.csv`, "utf8"));
+const book = (aoa) => { const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), "S"); return XLSX.write(wb, { type: "array", bookType: "xlsx" }); };
+const tryRec = (label, aoa) => { try { const x = readExcel("x.xlsx", book(aoa)); const r = reconcile(x.rows, bank); console.log(label, "OK", JSON.stringify(r.days.map(d => [d.date, d.status]))); } catch (e) { console.log(label, "THROWS", e.constructor.name + ": " + e.message); } };
+tryRec("REC-012 US-format text date 10/31/2026:", [["Tanggal","Tunai","QRIS"],["10/31/2026",1000,1000]]);
+tryRec("REC-013 month-13 text date 13/13/2026:", [["Tanggal","Tunai","QRIS"],["13/13/2026",1000,1000]]);
+tryRec("REC-014 31/02/2026:", [["Tanggal","Tunai","QRIS"],["31/02/2026",1000,1000]]);
+const x = readExcel("x.xlsx", book([["Tanggal","Tunai","QRIS"],["01/10/2026","libur","tutup"]]));
+console.log("IMP-042 text 'libur' in sales cell → amount:", x.rows.map(r => r.amount), "blank flags:", reconcile(x.rows, bank).flags.filter(f => f.kind === "blank").length);
+console.log("EVA-027 UTC vs WIB 'today' at 05:00 WIB:", new Date("2026-11-02T05:00:00+07:00").toISOString().slice(0, 10));

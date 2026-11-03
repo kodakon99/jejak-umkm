@@ -1,0 +1,74 @@
+{
+  "title": "Pilih dunia visual Jejak",
+  "question": "Re-roll: the roll assigned Sogan. Keep it, take an alternate, or re-roll again.",
+  "options": [
+    {
+      "id": "assigned-r1", "kind": "assigned", "label": "Sogan", "kicker": "THE ROLL",
+      "lineage": "classic Solo and Yogya sogan batik tulis",
+      "thesis": "Like wax-resist cloth, a verified day takes the dye: matched days fill with fine cecek dots, gaps stay as open outline.",
+      "palette": ["#f3ead6", "#6b3f1f", "#1e2a4a", "#b8862f", "#c0392b"],
+      "materials": ["soga brown on mori cream", "cecek dot fill"],
+      "viewport": "Cocokkan: indigo header with step tabs, the month as a 7-column grid of day cells; matched cells filled soga brown with a cecek dot texture, mismatch cells left as a red outline, the open day's detail below.",
+      "risk": "Batik on a working screen can read as heritage tourism if it reaches past palette and the dot fill.",
+      "raised": [
+        {"from": "challenger-boarding", "raise": "A flagged day stays lit until the owner has confirmed or explained it."},
+        {"from": "challenger-atlas", "raise": "Day size is constant; only fill and outline carry status, never decoration."},
+        {"from": "challenger-botanical", "raise": "Every month renders at the same scale on the same grid, so months compare directly."},
+        {"from": "challenger-saville", "raise": "One number leads each screen; everything else steps back."},
+        {"from": "challenger-terminal", "raise": "The action plan shows only the next decision, its date at full scale."}
+      ],
+      "html": ".impeccable/mocks/decision/assigned-r1.html", "htmlFrame": "390x844"
+    },
+    {
+      "id": "model-pick-r1", "kind": "pick", "label": "Kalender Dinding", "kicker": "IMPECCABLE’S PICK",
+      "lineage": "free wall calendars from toko emas and bank branches",
+      "thesis": "The month as the wall calendar every warung hangs: big numerals, red Sundays, each day marked as checked.",
+      "palette": ["#ffffff", "#141414", "#d6261f", "#0f7a4a", "#f2b705"],
+      "materials": ["heavy black numerals", "red Minggu column"],
+      "viewport": "Cocokkan as a full calendar sheet: huge date numerals, a green tick ring on matched days, red circled days with the gap amount, pasaran-style small line under each date for the bank amount.",
+      "risk": "Familiar and calendar-shaped, close to what most runs would ship for a day-by-day screen.",
+      "html": ".impeccable/mocks/decision/model-pick-r1.html", "htmlFrame": "390x844"
+    },
+    {
+      "id": "challenger-boarding", "kind": "challenger", "catalogId": "vernacular-ephemera-boarding-pass-and-gate-board",
+      "label": "Tiket & Papan Jadwal", "verdict": "competitive",
+      "lineage": "boarding passes and departure boards",
+      "thesis": "Each day a ticket stub: Excel and bank as its two torn halves; a changed row stays lit until noticed.",
+      "palette": ["#f4f4f1", "#121212", "#ff5a1f", "#2f7d4f"],
+      "materials": ["perforated segments", "tabular board rows"],
+      "viewport": "Cocokkan as a departure board of days, tabular columns Tanggal / Excel / Bank / Status, the flagged rows lit orange and held.",
+      "case": "Holds product clarity: the board is a natural reconciliation table. Loses on audience: travel ephemera, not warung life.",
+      "risk": "Can read as a travel app.",
+      "html": ".impeccable/mocks/decision/challenger-boarding.html", "htmlFrame": "390x844",
+      "hero": "https://impeccable.style/worlds/cards/vernacular-ephemera-boarding-pass-and-gate-board-hero.webp"
+    },
+    {"id": "challenger-atlas", "kind": "challenger", "catalogId": "notation-diagram-systems-star-atlas", "label": "Star Atlas", "verdict": "declined",
+     "lineage": "celestial charts", "thesis": "Hierarchy by dot size on a fixed ramp.", "palette": ["#0f1a33", "#f4f1e6", "#e0533a"], "materials": ["chart grid", "magnitude dots"],
+     "viewport": "A night chart of days.", "risk": "Dark, poetic, unrelated to money.", "case": "No owner sees their sales as stars.", "kept": "Status carried by fill and outline only.",
+     "hero": "https://impeccable.style/worlds/cards/notation-diagram-systems-star-atlas-hero.webp"},
+    {"id": "challenger-botanical", "kind": "challenger", "catalogId": "editorial-sequence-montage-botanical-folio-season", "label": "Botanical Folio", "verdict": "declined",
+     "lineage": "botanical plate folios", "thesis": "Same scale, same ground, every stage.", "palette": ["#f3ecdc", "#3f5a2a", "#b3261e"], "materials": ["cream plates", "sepia rules"],
+     "viewport": "Plates in sequence.", "risk": "Precious and slow.", "case": "Editorial, not operational.", "kept": "Every month at the same scale.",
+     "hero": "https://impeccable.style/worlds/cards/editorial-sequence-montage-botanical-folio-season-hero.webp"},
+    {"id": "challenger-saville", "kind": "challenger", "catalogId": "brand-identity-canon-saville-catalog-sleeve", "label": "Catalog Sleeve", "verdict": "declined",
+     "lineage": "Factory Records sleeves", "thesis": "One number as the only headline.", "palette": ["#111111", "#ffffff", "#e8b100", "#2d7dd2"], "materials": ["matte black", "colour codes"],
+     "viewport": "A coded black sleeve.", "risk": "Codes hide meaning from owners.", "case": "Hides labels the owner needs.", "kept": "One number leads each screen.",
+     "hero": "https://impeccable.style/worlds/cards/brand-identity-canon-saville-catalog-sleeve-hero.webp"},
+    {"id": "challenger-terminal", "kind": "challenger", "catalogId": "wayfinding-cartography-signage-terminal-yellow-wayfinding", "label": "Terminal Yellow", "verdict": "declined",
+     "lineage": "airport wayfinding bands", "thesis": "Only the next decision, monumental.", "palette": ["#ffd100", "#111111", "#ffffff"], "materials": ["yellow bands", "pictograms"],
+     "viewport": "A yellow band per step.", "risk": "Airport signage for a warung.", "case": "Strong for a plan, foreign to the audience.", "kept": "Plan shows only the next step.",
+     "hero": "https://impeccable.style/worlds/cards/wayfinding-cartography-signage-terminal-yellow-wayfinding-hero.webp"}
+  ],
+  "reroll": {"registers": ["safer", "bolder"]},
+  "buildPath": {"value": "code"},
+  "canon": true,
+  "canonCard": {
+    "kind": "canon", "label": "The category standard",
+    "thesis": "A clean white fintech card app with a green accent, executed impeccably.",
+    "palette": ["#ffffff", "#111827", "#16a34a"], "materials": ["rounded cards", "soft shadows"],
+    "viewport": "A summary card, then a list of day cards with status chips.",
+    "risk": "Reads like a bank or pinjol app, which you asked to avoid.",
+    "html": ".impeccable/mocks/decision/canon.html", "htmlFrame": "390x844"
+  },
+  "steer": true
+}
