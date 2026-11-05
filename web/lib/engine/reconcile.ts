@@ -8,8 +8,15 @@ import { locale, pick, type Lang } from "../i18n.ts";
 export const QRIS_FEE = 0.007;
 const QRIS_TOLERANCE = (expected: number) => Math.max(1_000, expected * 0.003);
 const CASH_RATIO_DRIFT = 0.05; // a week whose deposit/cash ratio is 5% off the median gets a caution
+// ponytail: fixed thresholds for "unusual"; learn per owner from 6 months of statements later.
+const UNUSUAL_SIZE = 3; // amount over 3x the median of the same kind of transaction
+const ODD_HOURS = (time: string) => time < "05:00"; // 00:00-04:59, outside any warung's hours
+// Lines with their own checks (QRIS, deposits) or posted by the bank itself.
+const ROUTINE = (b: BankLine) => ["opening", "qris", "cash_deposit", "fee", "interest"].includes(b.kind) || /^(biaya|pajak|bunga)\b/i.test(b.desc);
 
-export type FlagKind = "duplicate" | "blank" | "qris_mismatch" | "qris_missing" | "cash_week" | "supplier_unmatched";
+export type FlagKind =
+  | "duplicate" | "blank" | "qris_mismatch" | "qris_missing" | "cash_week" | "supplier_unmatched"
+  | "bank_only" | "bank_duplicate" | "unusual";
 
 export type Flag = {
   id: string;
@@ -99,7 +106,7 @@ export function reconcile(rows: LedgerRow[], bank: BankLine[], lang: Lang = "id"
       id: `qris-${b.line}`, kind: "qris_mismatch", severity: "selisih", dates: covers,
       title: t(`QRIS ${covers.map(shortDate).join("–")} beda dengan bank`, `QRIS for ${covers.map(shortDate).join("–")} differs from the bank`),
       detail: t(`Di Excel ${rp(gross)}, bank mencairkan ${rp(b.amount)} (setara ${rp(grossFromBank)} sebelum potongan ${(QRIS_FEE * 100).toLocaleString("id-ID")}%). Selisih ${rp(gross - grossFromBank)}.`,
-        `Excel shows ${rp(gross)}; the bank paid out ${rp(b.amount)} (${rp(grossFromBank)} before the ${QRIS_FEE * 100}% fee). Difference: ${rp(gross - grossFromBank)}.`),
+        `Excel shows ${rp(gross)}; the bank paid out ${rp(b.amount)} (${rp(grossFromBank)} before the ${(QRIS_FEE * 100).toLocaleString("en")}% fee). Difference: ${rp(gross - grossFromBank)}.`),
       question: t("Angka di Excel salah ketik, atau ada pembayaran QRIS yang masuk ke rekening lain?", "Is the Excel figure a typo, or did a QRIS payment go to another account?"),
       excel: cellsFor(covers, "qris"),
       bank: b,
@@ -144,16 +151,83 @@ export function reconcile(rows: LedgerRow[], bank: BankLine[], lang: Lang = "id"
     }
   }
 
-  // 5. Supplier debits should match an expense row within a few days.
+  // The bank's second copy of a transaction posted twice: reported once as a duplicate (6), not again below.
+  const posted = new Map<string, BankLine>();
+  const repeats = new Map<BankLine, BankLine>(); // repeat -> first posting
+  for (const b of bank.filter((b) => b.kind !== "opening")) {
+    const key = [b.date, b.time ?? "", b.desc, b.amount, b.dir].join("|");
+    const first = posted.get(key);
+    if (!first) posted.set(key, b);
+    else if (b.time || !ROUTINE(b)) repeats.set(b, first); // without times, two same-day fees are normal
+  }
+
+  // 5. Bank only, not in Excel.
+  //    a. Payments to a company or shop should match an expense row within a few days.
   const expenses = rows.filter((r) => r.channel === "expense");
-  for (const b of bank.filter((b) => b.kind === "supplier")) {
-    const hit = expenses.some((e) => e.amount === b.amount && Math.abs(Date.parse(e.date) - Date.parse(b.date)) <= 3 * 864e5);
-    if (hit) continue;
+  const near = (e: LedgerRow, b: BankLine) => Math.abs(Date.parse(e.date) - Date.parse(b.date)) <= 3 * 864e5;
+  const debits = bank.filter((b) => b.kind === "supplier" && b.dir === "DB" && !repeats.has(b));
+  const paid = (e: LedgerRow) => debits.some((b) => e.amount === b.amount && near(e, b));
+  for (const b of debits) {
+    if (expenses.some((e) => e.amount === b.amount && near(e, b))) continue;
+    const off = (e: LedgerRow) => Math.abs(e.amount! - b.amount);
+    const typo = expenses
+      .filter((e) => e.amount != null && near(e, b) && !paid(e) && off(e) / b.amount < 0.5)
+      .reduce<LedgerRow | undefined>((best, e) => (best && off(best) <= off(e) ? best : e), undefined);
     flags.push({
       id: `sup-${b.line}`, kind: "supplier_unmatched", severity: "cek", dates: [b.date],
-      title: t(`Transfer ke supplier ${shortDate(b.date)} tidak ada di Excel`, `Supplier transfer on ${shortDate(b.date)} is not in Excel`),
-      detail: t(`${b.desc} ${rp(b.amount)} belum tercatat sebagai pengeluaran.`, `${b.desc} ${rp(b.amount)} is not recorded as an expense.`),
-      question: t("Ini belanja usaha? Kalau ya, tambahkan ke catatan pengeluaran.", "Was this a business purchase? If so, add it to your expense records."),
+      title: t(`Pembayaran ke usaha lain ${shortDate(b.date)} tidak ada di Excel`, `Payment to a business on ${shortDate(b.date)} is not in Excel`),
+      detail: t(`${b.desc} ${rp(b.amount)} belum tercatat sebagai pengeluaran.`, `${b.desc} ${rp(b.amount)} is not recorded as an expense.`) +
+        (typo ? t(` Di Excel ada "${typo.item}" ${rp(typo.amount!)} (${shortDate(typo.date)}, sel ${typo.source.cell}), mungkin salah ketik.`,
+          ` Excel has "${typo.item}" for ${rp(typo.amount!)} (${shortDate(typo.date)}, cell ${typo.source.cell}); maybe a typo.`) : ""),
+      question: t("Ini belanja usaha? Kalau ya, tambahkan atau betulkan di catatan pengeluaran.", "Was this a business purchase? If so, add or fix it in your expense records."),
+      excel: typo ? [typo.source] : [],
+      bank: b,
+    });
+  }
+  //    b. Money in that is not QRIS, a cash deposit, interest or a labelled family transfer.
+  for (const b of bank.filter((b) => b.dir === "CR" && !ROUTINE(b) && b.kind !== "personal" && !repeats.has(b))) {
+    flags.push({
+      id: `in-${b.line}`, kind: "bank_only", severity: "cek", dates: [b.date],
+      title: t(`Uang masuk ${shortDate(b.date)} tidak ada di Excel`, `Money in on ${shortDate(b.date)} is not in Excel`),
+      detail: t(`${b.desc} ${rp(b.amount)} bukan settlement QRIS atau setoran tunai, dan tidak tercatat di Excel.`,
+        `${b.desc} ${rp(b.amount)} is not a QRIS settlement or cash deposit, and is not in Excel.`),
+      question: t("Uang ini dari mana: penjualan yang belum dicatat, pinjaman, atau uang pribadi? Petugas bank akan menanyakan uang masuk seperti ini.",
+        "Where did this money come from: unrecorded sales, a loan, or personal money? A bank officer will ask about money in like this."),
+      excel: [],
+      bank: b,
+    });
+  }
+
+  // 6. The same transaction posted twice by the bank (same time when the statement shows it, else same day).
+  for (const [b, first] of repeats) {
+    flags.push({
+      id: `bankdup-${b.line}`, kind: "bank_duplicate", severity: "cek", dates: [b.date],
+      title: t(`Mutasi ${shortDate(b.date)} tercatat dua kali di bank`, `A ${shortDate(b.date)} transaction appears twice on the statement`),
+      detail: t(`Baris ${first.line} dan ${b.line}: ${b.desc} ${rp(b.amount)}${b.time ? `, jam ${b.time}` : ""}, sama persis.`,
+        `Lines ${first.line} and ${b.line}: ${b.desc} ${rp(b.amount)}${b.time ? ` at ${b.time}` : ""}, identical.`),
+      question: t("Apakah memang dibayar dua kali? Kalau tidak, minta bank membatalkan salah satunya.", "Was it really paid twice? If not, ask the bank to reverse one."),
+      excel: [],
+      bank: b,
+    });
+  }
+
+  // 7. Unusual: far bigger than the same kind of transaction, or at an odd hour.
+  const sameKind = (b: BankLine) => `${b.dir}|${b.desc.toLowerCase().split(/\s+/).slice(0, 3).join(" ")}`;
+  const groups = new Map<string, BankLine[]>();
+  for (const b of bank.filter((b) => !ROUTINE(b))) groups.set(sameKind(b), [...(groups.get(sameKind(b)) ?? []), b]);
+  for (const b of bank.filter((b) => !ROUTINE(b) && !repeats.has(b))) {
+    const others = groups.get(sameKind(b))!.filter((o) => o !== b).map((o) => o.amount).sort((x, y) => x - y);
+    const median = others.length ? others[Math.floor(others.length / 2)] : 0;
+    const reasons: [string, string][] = [];
+    if (median && b.amount > UNUSUAL_SIZE * median)
+      reasons.push([`${Math.round(b.amount / median)}x lebih besar dari biasanya (${rp(median)})`, `${Math.round(b.amount / median)}x the usual amount (${rp(median)})`]);
+    if (b.time && ODD_HOURS(b.time)) reasons.push([`terjadi jam ${b.time}, di luar jam usaha`, `made at ${b.time}, outside business hours`]);
+    if (!reasons.length) continue;
+    flags.push({
+      id: `odd-${b.line}`, kind: "unusual", severity: "cek", dates: [b.date],
+      title: t(`Transaksi tidak biasa ${shortDate(b.date)}`, `Unusual transaction on ${shortDate(b.date)}`),
+      detail: t(`${b.desc} ${rp(b.amount)}: ${reasons.map((r) => r[0]).join("; ")}.`, `${b.desc} ${rp(b.amount)}: ${reasons.map((r) => r[1]).join("; ")}.`),
+      question: t("Ini untuk usaha atau keperluan pribadi? Kalau pribadi, sebaiknya pakai rekening terpisah.", "Was this for the business or personal? If personal, keep it in a separate account."),
       excel: [],
       bank: b,
     });

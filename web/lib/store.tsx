@@ -1,7 +1,7 @@
 "use client";
 // One session store for the owner's data. Lives in the browser only; nothing is sent anywhere.
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { readBankCsv, readExcel, type BankLine, type LedgerRow, type SheetMapping, type Source } from "./engine/read.ts";
+import { readExcel, type BankLine, type LedgerRow, type SheetMapping, type Source } from "./engine/read.ts";
 import { reconcile, type Reconciliation } from "./engine/reconcile.ts";
 import { evaluate, type Answers, type Readiness } from "./engine/gates.ts";
 import { locale, pick, type Lang, type T } from "./i18n.ts";
@@ -58,7 +58,7 @@ type Store = State & {
   setLang: (lang: Lang) => void;
   setProfile: (p: Partial<Profile>) => void;
   setGates: (g: Partial<GateAnswers>) => void;
-  importFiles: (excel: { name: string; data: ArrayBuffer }, bank: { name: string; text: string }) => void;
+  importFiles: (excel: { name: string; data: ArrayBuffer }, bank: { name: string; lines: BankLine[] }) => void;
   confirmMapping: () => void;
   resolve: (flagId: string, r: Omit<Resolution, "at"> | null) => void;
   reset: () => void;
@@ -119,7 +119,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setState((s) => ({
         ...s,
         resolutions: {},
-        imported: { excelFile: excel.name, bankFile: bank.name, rows: x.rows, mappings: x.mappings, skipped: x.skipped, bank: readBankCsv(bank.name, bank.text), confirmed: false },
+        imported: { excelFile: excel.name, bankFile: bank.name, rows: x.rows, mappings: x.mappings, skipped: x.skipped, bank: bank.lines, confirmed: false },
       }));
     },
     confirmMapping: () => setState((s) => (s.imported ? { ...s, imported: { ...s.imported, confirmed: true } } : s)),

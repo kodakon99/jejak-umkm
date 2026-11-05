@@ -26,12 +26,12 @@ Reconciliation, not export. Recording apps already export sales; officers still 
 - Pack is printed or shared as PDF and read by an officer who samples entries.
 
 ## Capabilities and Constraints
-- Deterministic rules decide gate results (versioned, each cites its banker source). AI, now rules-based stand-ins, only reads, matches and explains.
+- Deterministic rules decide gate results (versioned, each cites its public rule or common bank practice; interview provenance stays in the PRD). AI, now rules-based stand-ins, only reads, matches and explains.
 - Guardrails: never say approved/"disetujui"/eligible, only readiness ("kesiapan"); never generate or alter receipts; show every rule's source and say when it varies by bank; don't push new borrowing; owner controls all sharing; always answer "what if I'm still rejected".
 - Owner confirms or explains every flag; the engine never edits source data.
 - Must work on low-end Android phones.
-- Out of scope now: book-page photos (F4), chat onboarding, SLIK reader, PWA/offline, accounts, PDF statement parsing.
-- Not yet decided: DSC minimums, collateral rules (collateral gate is a provisional caution).
+- Out of scope now: book-page photos (F4), chat onboarding, SLIK reader, PWA/offline, accounts, PDF statements from banks other than the Mandiri-style layout.
+- Not yet decided: DSC minimums, collateral rules above Rp100 juta (collateral gate is a caution; each bank decides).
 
 ## Brand Commitments
 Name: **Jejak** ("trace / track record"), chosen by the user. Bahasa Indonesia UI, informal, no banking jargon without a plain explanation.
