@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import { readExcel, type BankLine, type LedgerRow, type SheetMapping, type Source } from "./engine/read.ts";
 import { reconcile, type Reconciliation } from "./engine/reconcile.ts";
 import { evaluate, type Answers, type Readiness } from "./engine/gates.ts";
+import type { Partner } from "./engine/partners.ts";
 import { locale, pick, type Lang, type T } from "./i18n.ts";
 
 export type Profile = {
@@ -13,8 +14,7 @@ export type Profile = {
   monthsOperating: number;
   loanAmount: number;
   records: "excel" | "buku" | "keduanya";
-  supplier: string;
-  supplierPhone: string;
+  partners: Partner[]; // suppliers and buyers the officer can phone
 };
 
 export type Resolution = { kind: "betulkan" | "jelaskan"; note: string; at: string };
@@ -35,7 +35,7 @@ type State = { lang: Lang; profile: Profile; gates: GateAnswers; imported: Impor
 
 const EMPTY: State = {
   lang: "id",
-  profile: { ownerName: "", businessName: "", businessType: "Warung kelontong", monthsOperating: 12, loanAmount: 25_000_000, records: "keduanya", supplier: "", supplierPhone: "" },
+  profile: { ownerName: "", businessName: "", businessType: "Warung kelontong", monthsOperating: 12, loanAmount: 25_000_000, records: "keduanya", partners: [] },
   gates: {
     slikOwner: "belum_cek", hasSpouse: true, slikSpouse: "belum_cek", onlineLoans: "tidak_ada", productiveLoans: "tidak_ada",
     dhn: false, sipp: false, nib: true, statementMonths: 6, hasFixedAsset: false,
@@ -45,6 +45,14 @@ const EMPTY: State = {
 };
 
 const KEY = "jejak-draft-v1";
+
+// Drafts saved before partners existed had one supplier + phone; keep it as the first partner.
+function migrate(s: State): State {
+  const old = s.profile as Profile & { supplier?: string; supplierPhone?: string };
+  if (Array.isArray(old.partners)) return s;
+  const { supplier, supplierPhone, ...rest } = old;
+  return { ...s, profile: { ...EMPTY.profile, ...rest, partners: supplier ? [{ name: supplier, role: "supplier", phone: supplierPhone ?? "" }] : [] } };
+}
 
 type Store = State & {
   rec: Reconciliation | null;
@@ -78,7 +86,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       // First visit: follow the browser, so an Indonesian phone opens in Bahasa and a reviewer's browser in English.
       const lang: Lang = navigator.language.toLowerCase().startsWith("id") ? "id" : "en";
       // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time hydrate from browser storage
-      setState(saved ? { ...EMPTY, lang, ...JSON.parse(saved) } : { ...EMPTY, lang });
+      setState(saved ? migrate({ ...EMPTY, lang, ...JSON.parse(saved) }) : { ...EMPTY, lang });
     } catch {}
     setLoaded(true);
     setNow(new Date().toISOString());
