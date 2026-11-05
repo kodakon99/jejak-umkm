@@ -134,7 +134,7 @@ export const GATES: Gate[] = [
       : pass(t(`Usaha berjalan ${a.monthsOperating} bulan.`, `The business has run for ${a.monthsOperating} months.`)),
   },
   {
-    id: "statements", label: ["Rekening koran 6 bulan", "6 months of bank statements"], source: PRACTICE,
+    id: "statements", label: ["Rekening koran 6 bulan", "6 months of bank statements"], source: KUR,
     advice: ["Masukkan semua QRIS dan setoran tunai ke satu rekening supaya riwayatnya utuh.", "Send all QRIS income and cash deposits to one account so the history is complete."],
     check: (a, d, t) =>
       a.statementMonths < 6 ? { status: "blokir", reason: t(`Rekening koran baru ${a.statementMonths} bulan, KUR minta 6 bulan.`, `You have ${a.statementMonths} months of bank statements; KUR asks for 6.`), readyDate: addMonths(d, 6 - a.statementMonths) }
