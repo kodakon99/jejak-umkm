@@ -2,6 +2,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import { readBankCsv, readBankPdf, type BankLine } from "@/lib/engine/read";
+import { pdfText } from "@/lib/pdf";
 import { rp, useStore } from "@/lib/store";
 import { Icon } from "../ui";
 
@@ -24,19 +26,31 @@ export default function Impor() {
     personal: t("Transfer pribadi", "Personal transfer"), fee: t("Biaya admin", "Bank fee"), interest: t("Bunga", "Interest"), other: t("Lainnya", "Other"),
   };
 
-  async function load(get: () => Promise<[{ name: string; data: ArrayBuffer }, { name: string; text: string }]>) {
+  async function load(get: () => Promise<[{ name: string; data: ArrayBuffer }, { name: string; lines: BankLine[] }]>) {
     setError("");
     setBusy(true);
     try {
       const [x, b] = await get();
       importFiles(x, b);
     } catch (e) {
-      setError(t(
-        `File tidak bisa dibaca: ${(e as Error).message}. Pastikan Excel berformat .xlsx dan mutasi bank berformat .csv.`,
-        `The file couldn't be read: ${(e as Error).message}. Make sure the Excel file is .xlsx and the bank statement is .csv.`));
+      const locked = (e as Error).name === "PasswordException";
+      setError(locked ? t(
+        "PDF mutasi ini dikunci kata sandi. Buka di HP atau laptop, simpan ulang tanpa kata sandi (Print > Simpan sebagai PDF), lalu impor lagi.",
+        "This statement PDF is password-protected. Open it, save a copy without the password (Print > Save as PDF), then import again.") : t(
+        `File tidak bisa dibaca: ${(e as Error).message}. Pastikan Excel berformat .xlsx dan mutasi bank berformat .csv atau .pdf.`,
+        `The file couldn't be read: ${(e as Error).message}. Make sure the Excel file is .xlsx and the bank statement is .csv or .pdf.`));
     } finally {
       setBusy(false);
     }
+  }
+
+  async function readBank(f: File): Promise<BankLine[]> {
+    if (!/\.pdf$/i.test(f.name)) return readBankCsv(f.name, await f.text());
+    const lines = readBankPdf(f.name, await pdfText(await f.arrayBuffer()));
+    if (!lines.length) throw new Error(t(
+      "tidak ada tabel transaksi yang terbaca di PDF ini. Bisa jadi hasil scan/foto atau format banknya belum didukung; coba unduh mutasi dalam CSV",
+      "no transaction table was found in this PDF. It may be a scan or photo, or this bank's layout isn't supported yet; try downloading the statement as CSV"));
+    return lines;
   }
 
   const fromInputs = () =>
@@ -44,7 +58,7 @@ export default function Impor() {
       const x = excelRef.current?.files?.[0];
       const b = bankRef.current?.files?.[0];
       if (!x || !b) throw new Error(t("pilih dua file dulu", "pick both files first"));
-      return [{ name: x.name, data: await x.arrayBuffer() }, { name: b.name, text: await b.text() }];
+      return [{ name: x.name, data: await x.arrayBuffer() }, { name: b.name, lines: await readBank(b) }];
     });
 
   const fromSample = (template: "A" | "B") =>
@@ -52,7 +66,7 @@ export default function Impor() {
       const name = `owner_recap_template${template}.xlsx`;
       const [x, b] = await Promise.all([fetch(`/samples/${name}`), fetch("/samples/bank_statement_sample.csv")]);
       if (!x.ok || !b.ok) throw new Error(t("data contoh tidak ditemukan", "sample data not found"));
-      return [{ name, data: await x.arrayBuffer() }, { name: "bank_statement_sample.csv", text: await b.text() }];
+      return [{ name, data: await x.arrayBuffer() }, { name: "bank_statement_sample.csv", lines: readBankCsv("bank_statement_sample.csv", await b.text()) }];
     });
 
   const salesRows = imported?.rows.filter((r) => r.channel !== "expense") ?? [];
@@ -76,8 +90,8 @@ export default function Impor() {
             <label className="btn quiet pick">{t("Pilih file", "Choose file")}<input ref={excelRef} type="file" accept=".xlsx,.xls" onChange={(e) => setPicked((p) => ({ ...p, excel: e.target.files?.[0]?.name ?? "" }))} /></label></div>
         </div>
         <div className="panel">
-          <div className="file"><Icon name="bank" /><span><b>{t("Mutasi rekening (CSV)", "Bank statement (CSV)")}</b><br /><span className="small">{picked.bank || noFile}</span></span>
-            <label className="btn quiet pick">{t("Pilih file", "Choose file")}<input ref={bankRef} type="file" accept=".csv,text/csv" onChange={(e) => setPicked((p) => ({ ...p, bank: e.target.files?.[0]?.name ?? "" }))} /></label></div>
+          <div className="file"><Icon name="bank" /><span><b>{t("Mutasi rekening (CSV atau PDF)", "Bank statement (CSV or PDF)")}</b><br /><span className="small">{picked.bank || noFile}</span></span>
+            <label className="btn quiet pick">{t("Pilih file", "Choose file")}<input ref={bankRef} type="file" accept=".csv,text/csv,.pdf,application/pdf" onChange={(e) => setPicked((p) => ({ ...p, bank: e.target.files?.[0]?.name ?? "" }))} /></label></div>
         </div>
         {error && <p className="error" role="alert">{error}</p>}
         <div className="btn-row">
@@ -129,8 +143,8 @@ export default function Impor() {
           <div className="panel" style={{ marginTop: 12 }}>
             <b>{t("Mutasi rekening", "Bank statement")}</b> <span className="small">· {imported.bankFile}</span>
             {business.length === 0 && <p className="error">{t(
-              "Tidak ada setoran tunai, settlement QRIS, atau transfer ke supplier yang terbaca. Pastikan ini file mutasi rekening usaha dari m-banking (CSV).",
-              "No cash deposits, QRIS settlements or supplier transfers were found. Make sure this is your business account's statement from mobile banking (CSV).")}</p>}
+              "Tidak ada setoran tunai, settlement QRIS, atau transfer ke supplier yang terbaca. Pastikan ini file mutasi rekening usaha dari m-banking (CSV atau PDF e-Statement).",
+              "No cash deposits, QRIS settlements or supplier transfers were found. Make sure this is your business account's statement from mobile banking (CSV or PDF e-Statement).")}</p>}
             <p className="small" style={{ marginTop: 4 }}>{t(
               `${business.length} transaksi usaha dipakai untuk pencocokan. ${excluded.length} transaksi bukan usaha disisihkan:`,
               `${business.length} business transactions are used for matching. ${excluded.length} non-business transactions were set aside:`)}</p>

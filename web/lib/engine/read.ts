@@ -1,4 +1,4 @@
-// Reader stand-in: turns an owner's Excel recap or a bank statement CSV into
+// Reader stand-in: turns an owner's Excel recap or a bank statement (CSV or PDF) into
 // canonical ledger rows, each carrying its source (sheet + cell, or statement line).
 // Rules-based column mapping; swap mapColumns() for a Claude call later.
 import * as XLSX from "xlsx";
@@ -134,6 +134,7 @@ export type BankLine = {
   desc: string;
   amount: number;
   dir: "CR" | "DB" | "";
+  time?: string; // HH:MM:SS, PDF e-Statements only
   kind: BankKind;
   business: boolean;
   covers?: string[]; // QRIS settlement: the sales dates it pays out
@@ -147,7 +148,8 @@ const BANK_RULES: [BankKind, RegExp, boolean][] = [
   ["personal", /PRIBADI|SAUDARA|KELUARGA/i, false],
   ["fee", /BIAYA ADM|ADM BANK/i, false],
   ["interest", /BUNGA|PAJAK BUNGA/i, false],
-  ["supplier", /TRF KE (PT|CV|UD|TOKO)/i, true],
+  // A company or shop as counterparty, in any bank's wording ("TRF KE PT …", "Ke BCA PT …", "Pembayaran QR ke TOKO …").
+  ["supplier", /\b(PT|CV|UD|TOKO)\s+[A-Z]/i, true],
 ];
 
 function parseCsvLine(s: string, sep: "," | ";"): string[] {
@@ -175,15 +177,62 @@ export function readBankCsv(file: string, text: string): BankLine[] {
     const [tgl, desc, mutasi, dir] = parseCsvLine(raw, sep);
     const date = toIsoDate(tgl);
     if (!date) return;
-    const [kind, , business] = BANK_RULES.find(([, re]) => re.test(desc)) ?? ["other", /./, false];
-    const line = i + 2;
-    out.push({
-      line, date, desc, kind, business,
-      amount: toAmount(mutasi.replace(/\.\d{2}$/, "")) ?? 0,
-      dir: dir === "CR" || dir === "DB" ? dir : "",
-      covers: kind === "qris" ? expandCovers(desc, date.slice(0, 4)) : undefined,
-      source: { file, line },
-    });
+    out.push(bankLine(file, i + 2, date, desc, toAmount(mutasi.replace(/\.\d{2}$/, "")) ?? 0, dir === "CR" || dir === "DB" ? dir : ""));
   });
+  return out;
+}
+
+function bankLine(file: string, line: number, date: string, desc: string, amount: number, dir: BankLine["dir"]): BankLine {
+  const [kind, , business] = BANK_RULES.find(([, re]) => re.test(desc)) ?? ["other", /./, false];
+  return {
+    line, date, desc, kind, business, amount, dir,
+    covers: kind === "qris" ? expandCovers(desc, date.slice(0, 4)) : undefined,
+    source: { file, line },
+  };
+}
+
+// ---------- bank statement (PDF e-Statement table: No | Tanggal | Keterangan | Nominal | Saldo) ----------
+// Takes text items with page coordinates (pdf.js getTextContent), so it runs without pdf.js.
+// Each transaction is anchored on its "No" cell; everything between two anchors belongs to it.
+// ponytail: one layout (Mandiri-style signed Nominal); add per-bank layouts as real statements arrive.
+
+export type PdfText = { str: string; x: number; y: number };
+
+const MONTHS: Record<string, number> = {
+  jan: 1, feb: 2, mar: 3, apr: 4, may: 5, mei: 5, jun: 6, jul: 7, aug: 8, agu: 8, agt: 8, sep: 9, oct: 10, okt: 10, nov: 11, dec: 12, des: 12,
+};
+const SIGNED = /^[+-]\s?\d{1,3}(\.\d{3})*,\d{2}$/;
+
+function pdfDate(s: string): string | null {
+  const m = s.trim().match(/^(\d{1,2}) ([A-Za-z]{3})[a-z]* (\d{4})$/);
+  const mon = m && MONTHS[m[2].toLowerCase()];
+  return mon ? realDate(`${m[3]}-${pad(mon)}-${pad(+m[1])}`) : null;
+}
+
+export function readBankPdf(file: string, pages: PdfText[][]): BankLine[] {
+  const out: BankLine[] = [];
+  for (const items of pages) {
+    const find = (re: RegExp) => items.find((i) => re.test(i.str.trim()));
+    const tgl = find(/^Tanggal$/i), ket = find(/^Keterangan$/i);
+    if (!tgl || !ket) continue; // no transaction table on this page
+    const body = items.filter((i) => i.y < ket.y - 15 && i.str.trim());
+    const anchors = body.filter((i) => i.x < tgl.x && /^\d{1,5}$/.test(i.str.trim())).sort((a, b) => b.y - a.y);
+    anchors.forEach((a, k) => {
+      const up = k > 0 ? anchors[k - 1].y - a.y : anchors[k + 1] ? a.y - anchors[k + 1].y : 46;
+      const down = anchors[k + 1] ? a.y - anchors[k + 1].y : up;
+      const band = body.filter((i) => i.y < a.y + up / 2 && i.y >= a.y - down / 2);
+      const date = band.map((i) => (i.x < ket.x ? pdfDate(i.str) : null)).find(Boolean);
+      const amt = band.find((i) => SIGNED.test(i.str.trim()));
+      if (!date || !amt) return;
+      const desc = band
+        .filter((i) => i.x >= ket.x - 2 && i.x < amt.x - 5 && i.str.trim() !== "-")
+        .sort((p, q) => q.y - p.y || p.x - q.x)
+        .map((i) => i.str.trim())
+        .join(" ");
+      const s = amt.str.trim();
+      const time = band.map((i) => i.str.trim().match(/^(\d{2}:\d{2}(?::\d{2})?) WIB$/)?.[1]).find(Boolean);
+      out.push({ ...bankLine(file, Number(a.str), date, desc, Math.abs(toAmount(s) ?? 0), s.startsWith("+") ? "CR" : "DB"), time });
+    });
+  }
   return out;
 }

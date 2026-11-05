@@ -138,7 +138,7 @@ export default function Cek() {
               <p>{x.reason}</p>
               <details>
                 <summary>{t("Dasar aturan", "Where this rule comes from")}</summary>
-                <div>{t("Berdasarkan praktik penyaringan bank", "Based on bank screening practice")}: {x.source}. {x.note}</div>
+                <div>{x.source}. {x.note}</div>
               </details>
             </li>
           ))}

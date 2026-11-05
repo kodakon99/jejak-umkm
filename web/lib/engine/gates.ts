@@ -2,7 +2,7 @@
 // ever decides "siap" or "belum siap". Each gate cites the banker it came from.
 import { pick, type Lang, type T } from "../i18n.ts";
 
-export const RULES_VERSION = "2026-10-26";
+export const RULES_VERSION = "2026-11-05";
 
 export type Answers = {
   slikOwner: "bersih" | "kol2" | "belum_cek";
@@ -48,11 +48,16 @@ type Gate = {
   check: (a: Answers, today: string, t: T) => { status: GateStatus; reason: string; readyDate?: string | null; advice?: string } | null;
 };
 
-// Interviewees are named by role only: they did not agree to be named publicly.
-const MANDIRI: Pair = ["Bankir Bank Mandiri (wawancara 24 Sep & 1 Okt 2026)", "Bank Mandiri banker (interviews 24 Sep & 1 Oct 2026)"];
-const BNI: Pair = ["Analis kredit BNI (wawancara 21–22 Okt 2026)", "BNI credit analyst (interviews 21–22 Oct 2026)"];
-const OFFICER: Pair = ["Petugas KUR via WhatsApp (26 Okt 2026)", "KUR officer via WhatsApp (26 Oct 2026)"];
-const both = (a: Pair, b: Pair): Pair => [`${a[0]}; ${b[0]}`, `${a[1]}; ${b[1]}`];
+// What the owner sees as the basis for each rule: a public rule where one exists, otherwise
+// common bank practice (and we say it varies by bank). Interview evidence behind each rule
+// (Mandiri banker 24 Sep & 1 Oct, BNI credit analyst 21-22 Oct, KUR officer 26 Oct 2026) lives
+// in the PRD, not in the UI: interviewees are named by role only and did not agree to be quoted.
+const KUR: Pair = ["Aturan KUR pemerintah (Permenko Perekonomian tentang KUR), berlaku di semua bank penyalur KUR", "Government KUR rules (Coordinating Ministry for Economic Affairs regulation on KUR), applied by every KUR bank"];
+const OJK_SLIK: Pair = ["Semua bank wajib memeriksa riwayat kredit di SLIK OJK sebelum memberi pinjaman", "Every bank checks your credit history in OJK's SLIK before lending"];
+const PINJOL_SLIK: Pair = ["Sejak 31 Juli 2025, pinjol resmi wajib melapor ke SLIK OJK, jadi bank bisa melihatnya", "Since 31 July 2025, licensed online lenders must report to OJK's SLIK, so banks can see them"];
+const BI_DHN: Pair = ["Daftar Hitam Nasional dikelola Bank Indonesia dan dipakai semua bank", "The National Blacklist is run by Bank Indonesia and used by every bank"];
+const PRACTICE: Pair = ["Praktik umum bank saat menilai kredit usaha. Tiap bank bisa sedikit berbeda; kami pakai yang paling ketat", "Common bank practice for business loans. Banks differ a little; we use the strictest version"];
+const both = (a: Pair, b: Pair): Pair => [`${a[0]}. ${b[0]}`, `${a[1]}. ${b[1]}`];
 const pass = (reason: string) => ({ status: "lulus" as const, reason });
 
 export const addMonths = (iso: string, n: number) => {
@@ -79,18 +84,18 @@ const slik = (spouse: boolean, status: Answers["slikOwner"], badUntil: string | 
 
 export const GATES: Gate[] = [
   {
-    id: "slik_owner", label: ["SLIK (kamu)", "SLIK (you)"], source: both(MANDIRI, BNI),
+    id: "slik_owner", label: ["SLIK (kamu)", "SLIK (you)"], source: OJK_SLIK,
     advice: ["Ambil laporan SLIK gratis di iDebKu OJK. Lunasi tunggakan, lalu tunggu sampai 6 bulan bersih.", "Get your free SLIK report from OJK's iDebKu. Pay off any arrears, then wait until you have 6 clean months."],
-    note: ["Aturan 6 bulan dari BNI, yang paling ketat. Bank lain bisa lebih longgar.", "The 6-month rule is BNI's, the strictest we know. Other banks may be more lenient."],
+    note: ["Syarat 6 bulan bersih adalah praktik bank yang paling ketat; sebagian bank lebih longgar.", "Waiting for 6 clean months is the strictest bank practice; some banks are more lenient."],
     check: (a, d, t) => slik(false, a.slikOwner, a.slikOwnerBadUntil, d, t),
   },
   {
-    id: "slik_spouse", label: ["SLIK (pasangan)", "SLIK (spouse)"], source: BNI,
+    id: "slik_spouse", label: ["SLIK (pasangan)", "SLIK (spouse)"], source: both(OJK_SLIK, PRACTICE),
     advice: ["Cek SLIK pasangan juga. Bank memeriksa pemohon dan pasangan.", "Check your spouse's SLIK too. The bank checks both the applicant and the spouse."],
     check: (a, d, t) => (a.hasSpouse ? slik(true, a.slikSpouse, a.slikSpouseBadUntil, d, t) : pass(t("Tidak ada pasangan yang perlu dicek.", "No spouse to check."))),
   },
   {
-    id: "online_loans", label: ["Pinjol & paylater", "Online loans & paylater"], source: BNI,
+    id: "online_loans", label: ["Pinjol & paylater", "Online loans & paylater"], source: PINJOL_SLIK,
     advice: ["Bayar cicilan yang telat sampai lancar, atau lunasi sebelum mengajukan.", "Bring late instalments up to date, or pay them off before you apply."],
     check: (a, _, t) =>
       a.onlineLoans === "telat" ? { status: "blokir", reason: t("Ada pinjol atau paylater yang telat bayar. Ini tercatat di SLIK.", "An online loan or paylater payment is late. This shows in SLIK.") }
@@ -98,7 +103,7 @@ export const GATES: Gate[] = [
       : pass(t("Tidak ada pinjol atau paylater.", "No online loans or paylater.")),
   },
   {
-    id: "productive_loans", label: ["Pinjaman usaha lain", "Other business loans"], source: BNI,
+    id: "productive_loans", label: ["Pinjaman usaha lain", "Other business loans"], source: KUR,
     advice: ["Lunasi pinjaman usaha di bank lain sebelum mengajukan KUR.", "Pay off business loans at other banks before applying for KUR."],
     check: (a, _, t) =>
       a.productiveLoans === "aktif_bank" ? { status: "blokir", reason: t("Masih ada pinjaman usaha aktif di bank. Ini bisa menghalangi KUR.", "You still have an active business loan at a bank. This can block KUR.") }
@@ -106,22 +111,22 @@ export const GATES: Gate[] = [
       : pass(t("Tidak ada pinjaman usaha lain.", "No other business loans.")),
   },
   {
-    id: "dhn", label: ["Daftar Hitam Nasional (DHN)", "National Blacklist (DHN)"], source: BNI,
+    id: "dhn", label: ["Daftar Hitam Nasional (DHN)", "National Blacklist (DHN)"], source: BI_DHN,
     advice: ["Selesaikan dulu dengan bank yang memasukkan kamu ke DHN.", "Settle it first with the bank that listed you in DHN."],
     check: (a, _, t) => (a.dhn ? { status: "blokir", reason: t("Nama kamu ada di DHN (cek kosong).", "Your name is on DHN (bounced cheque).") } : pass(t("Tidak ada di DHN.", "Not on DHN."))),
   },
   {
-    id: "sipp", label: ["Perkara pengadilan (SIPP)", "Court cases (SIPP)"], source: BNI,
+    id: "sipp", label: ["Perkara pengadilan (SIPP)", "Court cases (SIPP)"], source: PRACTICE,
     advice: ["Tunggu sampai perkaranya selesai.", "Wait until the case is resolved."],
     check: (a, _, t) => (a.sipp ? { status: "blokir", reason: t("Ada perkara aktif di pengadilan.", "You have an active court case.") } : pass(t("Tidak ada perkara aktif.", "No active court case."))),
   },
   {
-    id: "nib", label: ["Legalitas usaha (NIB)", "Business licence (NIB)"], source: MANDIRI,
+    id: "nib", label: ["Legalitas usaha (NIB)", "Business licence (NIB)"], source: KUR,
     advice: ["Daftar NIB gratis di oss.go.id. Biasanya selesai dalam sehari.", "Register for an NIB for free at oss.go.id. It usually takes a day."],
     check: (a, _, t) => (a.nib ? pass(t("Sudah punya NIB.", "You have an NIB.")) : { status: "blokir", reason: t("Belum punya NIB.", "You don't have an NIB yet.") }),
   },
   {
-    id: "operating", label: ["Lama usaha", "Time in business"], source: BNI,
+    id: "operating", label: ["Lama usaha", "Time in business"], source: KUR,
     advice: ["Terus catat penjualan. Ajukan setelah usaha berjalan minimal 6 bulan.", "Keep recording sales. Apply once the business has run for at least 6 months."],
     check: (a, d, t) =>
       a.monthsOperating < 6 ? { status: "blokir", reason: t(`Usaha baru berjalan ${a.monthsOperating} bulan.`, `The business has only run for ${a.monthsOperating} months.`), readyDate: addMonths(d, 6 - a.monthsOperating) }
@@ -129,14 +134,14 @@ export const GATES: Gate[] = [
       : pass(t(`Usaha berjalan ${a.monthsOperating} bulan.`, `The business has run for ${a.monthsOperating} months.`)),
   },
   {
-    id: "statements", label: ["Rekening koran 6 bulan", "6 months of bank statements"], source: BNI,
+    id: "statements", label: ["Rekening koran 6 bulan", "6 months of bank statements"], source: PRACTICE,
     advice: ["Masukkan semua QRIS dan setoran tunai ke satu rekening supaya riwayatnya utuh.", "Send all QRIS income and cash deposits to one account so the history is complete."],
     check: (a, d, t) =>
       a.statementMonths < 6 ? { status: "blokir", reason: t(`Rekening koran baru ${a.statementMonths} bulan, KUR minta 6 bulan.`, `You have ${a.statementMonths} months of bank statements; KUR asks for 6.`), readyDate: addMonths(d, 6 - a.statementMonths) }
       : pass(t("Rekening koran 6 bulan tersedia.", "6 months of bank statements available.")),
   },
   {
-    id: "sales_evidence", label: ["Bukti penjualan", "Sales evidence"], source: both(BNI, OFFICER),
+    id: "sales_evidence", label: ["Bukti penjualan", "Sales evidence"], source: PRACTICE,
     advice: ["Impor bulan-bulan sebelumnya dan jelaskan setiap selisih antara Excel dan bank.", "Import earlier months and explain every difference between your Excel and the bank."],
     check: (a, _, t) =>
       a.reconciledMonths < 3 ? { status: "hati", reason: t(`Baru ${a.reconciledMonths} bulan yang dicocokkan dengan bank. Idealnya 3 bulan atau lebih.`, `Only ${a.reconciledMonths} months are matched with the bank. Ideally 3 months or more.`) }
@@ -144,9 +149,9 @@ export const GATES: Gate[] = [
       : pass(t(`${a.reconciledMonths} bulan penjualan sudah cocok dengan bank.`, `${a.reconciledMonths} months of sales match the bank.`)),
   },
   {
-    id: "collateral", label: ["Jaminan (sementara)", "Collateral (provisional)"], source: OFFICER,
+    id: "collateral", label: ["Jaminan", "Collateral"], source: KUR,
     advice: ["Pertimbangkan pinjaman di bawah Rp100 juta, misalnya KUR Mikro tanpa agunan tambahan.", "Consider a loan under Rp100 million, such as KUR Mikro with no extra collateral."],
-    note: ["Masih sementara: cara bank menilai jaminan belum kami pastikan.", "Provisional: we have not yet confirmed how banks assess collateral."],
+    note: ["Sampai Rp100 juta, aturan KUR melarang bank meminta agunan tambahan. Di atasnya, jenis dan nilai jaminan ditentukan tiap bank.", "Up to Rp100 million, KUR rules bar banks from asking for extra collateral. Above that, each bank decides what collateral it accepts."],
     check: (a, _, t) =>
       a.loanAmount > 100_000_000 && !a.hasFixedAsset ? { status: "hati", reason: t("Di atas Rp100 juta biasanya perlu jaminan aset tetap, dan kamu belum punya.", "Above Rp100 million usually needs a fixed asset as collateral, and you don't have one yet.") }
       : pass(a.loanAmount > 100_000_000 ? t("Ada aset tetap untuk jaminan.", "You have a fixed asset for collateral.") : t("Jumlah pinjaman dalam rentang KUR Mikro.", "The loan amount is within the KUR Mikro range.")),

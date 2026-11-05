@@ -1,8 +1,8 @@
 // Run: npm test. Uses the synthetic sample files in the project root.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { readExcel, readBankCsv } from "./read.ts";
+import { existsSync, readFileSync } from "node:fs";
+import { readExcel, readBankCsv, readBankPdf, type PdfText } from "./read.ts";
 import { reconcile } from "./reconcile.ts";
 import { evaluate, type Answers } from "./gates.ts";
 import { actionPlan } from "./coach.ts";
@@ -164,4 +164,55 @@ test("English output keeps every status, date and flag id, and never promises ap
   assert.deepEqual(recEn.days.map((d) => d.status), recId.days.map((d) => d.status));
   const text = JSON.stringify([en, recEn.flags]).toLowerCase();
   for (const banned of ["approved", "eligible", "guaranteed"]) assert.ok(!text.includes(banned), banned);
+});
+
+// ---------- PDF e-Statement reads the same as its CSV twin ----------
+// The upload test sets live in the local-only "sample document/" folder (gitignored); skip where it's absent, e.g. CI.
+const noTestSets = !existsSync(new URL("sample document/Test 2 - Selisih/", root)) && "sample document/ test sets not present";
+
+async function readPdf(path: string) {
+  const { getDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  const doc = await getDocument({ data: new Uint8Array(file(path)) }).promise;
+  const pages: PdfText[][] = [];
+  for (let p = 1; p <= doc.numPages; p++) {
+    const { items } = await (await doc.getPage(p)).getTextContent();
+    pages.push(items.flatMap((i) => ("str" in i ? [{ str: i.str, x: i.transform[4], y: i.transform[5] }] : [])));
+  }
+  return readBankPdf(path, pages);
+}
+
+test("PDF e-Statement: every transaction matches the CSV export", { skip: noTestSets }, async () => {
+  const dir = "sample document/Test 2 - Selisih/";
+  // CSV reader drops cents (87.61 -> 87); the PDF keeps them, so compare whole rupiah.
+  const pick = (b: ReturnType<typeof readBankCsv>) => b.map((l) => [l.date, l.desc, Math.trunc(l.amount), l.dir, l.kind, l.covers]);
+  const csv = readBankCsv("m.csv", file(dir + "mutasi_Okt2026_selisih.csv").toString("utf8")).filter((l) => l.kind !== "opening");
+  const pdf = await readPdf(dir + "e-Statement_Okt2026_selisih.pdf");
+  assert.deepEqual(pick(pdf), pick(csv));
+  assert.deepEqual(pdf.map((l) => l.line), csv.map((_, i) => i + 1)); // line = the statement's No column
+});
+
+// ---------- upload test sets: Test 1 is clean, Test 2 has every planted case (see KUNCI_JAWABAN.md) ----------
+const testSet = async (dir: string, tag: string) =>
+  reconcile(readExcel("x.xlsx", file(`sample document/${dir}/Laporan_Keuangan_Warung_Okt2026_${tag}.xlsx`)).rows,
+    await readPdf(`sample document/${dir}/e-Statement_Okt2026_${tag}.pdf`));
+
+test("Test 1 - Cocok: Excel and PDF statement agree, no flags", { skip: noTestSets }, async () => {
+  assert.deepEqual((await testSet("Test 1 - Cocok", "cocok")).flags, []);
+});
+
+test("Test 2 - Selisih: duplicate, blank, unusual, bank-only and Excel-only are all flagged", { skip: noTestSets }, async () => {
+  const rec = await testSet("Test 2 - Selisih", "selisih");
+  const got = rec.flags.map((f) => `${f.kind}@${f.dates.length > 1 ? f.dates[0] + ".." : f.dates[0]}`).sort();
+  assert.deepEqual(got, [
+    "bank_duplicate@2026-10-22", // QR payment posted twice
+    "bank_only@2026-10-17", // Rp15jt in from an unknown sender
+    "blank@2026-10-21",
+    "cash_week@2026-10-05..", "cash_week@2026-10-19..",
+    "duplicate@2026-10-23",
+    "qris_mismatch@2026-10-14", // Excel-only: Rp300rb more than the bank
+    "qris_missing@2026-10-07", // Excel-only: no settlement at all
+    "supplier_unmatched@2026-10-13", "supplier_unmatched@2026-10-20", "supplier_unmatched@2026-10-22",
+    "unusual@2026-10-09", "unusual@2026-10-17", "unusual@2026-10-28",
+  ]);
+  assert.match(rec.flags.find((f) => f.id.startsWith("sup-") && f.dates[0] === "2026-10-13")!.detail, /1\.260\.000/); // points at the typo
 });

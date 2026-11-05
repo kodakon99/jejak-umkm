@@ -3,3 +3,6 @@
 TSEL_*.docx
 # Names interviewees who did not agree to be named publicly; shared on request only.
 PRD*.pdf
+
+# Local test documents: includes a real bank statement. Regenerate the synthetic sets with generate_test_documents.py.
+sample document/
