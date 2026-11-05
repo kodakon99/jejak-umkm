@@ -34,14 +34,15 @@ const within3Days = (a: string, b: string) => Math.abs(Date.parse(a) - Date.pars
 
 export function partnerActivity(partners: Partner[], bank: BankLine[], rows: LedgerRow[]): PartnerActivity[] {
   const expenses = rows.filter((r) => r.channel === "expense" && r.amount != null);
+  const paired = new Set<LedgerRow>();
   return partners.map((partner) => { // same order as given; a blank name finds nothing
-    const paired = new Set<LedgerRow>();
+    const namesOther = (e: LedgerRow) => partners.some((o) => o !== partner && mentions(e.item, o.name));
     const txns: PartnerTxn[] = bank
       .filter((b) => b.dir && b.kind !== "opening" && mentions(b.desc, partner.name))
       .map((b) => {
         // A payment out should have its expense row: same amount within 3 days, preferring one that names the partner.
         const candidates = b.dir === "DB" ? expenses.filter((e) => !paired.has(e) && e.amount === b.amount && within3Days(e.date, b.date)) : [];
-        const e = candidates.find((c) => mentions(c.item, partner.name)) ?? candidates[0];
+        const e = candidates.find((c) => mentions(c.item, partner.name)) ?? candidates.find((c) => !namesOther(c));
         if (e) paired.add(e);
         return { date: b.date, amount: b.amount, dir: b.dir === "CR" ? "in" : "out", desc: b.desc, bank: b, excel: e?.source, found: e ? "both" : "bank" } as PartnerTxn;
       });

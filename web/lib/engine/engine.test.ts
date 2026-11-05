@@ -273,3 +273,16 @@ test("a buyer's transfer in is listed as money received", () => {
   assert.deepEqual(buyer.txns.map((t) => [t.dir, t.amount, t.found, t.bank?.line]), [["in", 2_400_000, "bank", 7]]);
   assert.equal(buyer.totalIn, 2_400_000);
 });
+
+test("a payment is never backed by an Excel row that names another partner", () => {
+  const debit = (line: number, date: string, desc: string) => ({ line, date, desc, amount: 500_000, dir: "DB", kind: "supplier", business: true, source: { file: "s.pdf", line } } as const);
+  const row = (cell: string, date: string, item: string) => ({ date, channel: "expense", amount: 500_000, item, source: { file: "x.xlsx", sheet: "Okt", cell }, sig: cell, confidence: 1 } as const);
+  const partners = [{ name: "Toko Alfa Jaya", role: "supplier", phone: "" }, { name: "Toko Beta Sentosa", role: "supplier", phone: "" }] as const;
+  // A's 10 Oct transfer was never typed in Excel; the 11 Oct row is B's, and B has no bank line.
+  const [a, b] = partnerActivity([...partners], [debit(1, "2026-10-10", "TRF KE TOKO ALFA JAYA")], [row("E5", "2026-10-11", "Bayar Toko Beta Sentosa")]);
+  assert.deepEqual(a.txns.map((t) => t.found), ["bank"]);
+  assert.deepEqual(b.txns.map((t) => [t.found, t.excel?.cell]), [["excel", "E5"]]);
+  // One unnamed row cannot back two partners' payments.
+  const [a2, b2] = partnerActivity([...partners], [debit(1, "2026-10-10", "TRF KE TOKO ALFA JAYA"), debit(2, "2026-10-11", "TRF KE TOKO BETA SENTOSA")], [row("E6", "2026-10-11", "Belanja bahan")]);
+  assert.deepEqual([...a2.txns, ...b2.txns].map((t) => t.found), ["both", "bank"]);
+});
