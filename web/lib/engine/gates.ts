@@ -1,5 +1,5 @@
 // Gatekeeper: the readiness gates from the PRD, as data. Deterministic: no model
-// ever decides "siap" or "belum siap". Each gate cites the banker it came from.
+// ever decides "siap" or "belum siap". Each gate cites its public rule or common bank practice.
 import { pick, type Lang, type T } from "../i18n.ts";
 
 export const RULES_VERSION = "2026-11-05";

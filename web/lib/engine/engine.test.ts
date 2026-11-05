@@ -216,3 +216,16 @@ test("Test 2 - Selisih: duplicate, blank, unusual, bank-only and Excel-only are 
   ]);
   assert.match(rec.flags.find((f) => f.id.startsWith("sup-") && f.dates[0] === "2026-10-13")!.detail, /1\.260\.000/); // points at the typo
 });
+
+test("supplier typo hint points at the closest unpaid expense, not the first nearby one", () => {
+  const exp = (date: string, item: string, amount: number, cell: string) =>
+    ({ date, channel: "expense", amount, item, source: { file: "x.xlsx", sheet: "Pengeluaran", cell }, sig: cell, confidence: 1 }) as const;
+  const debit = (line: number, date: string, desc: string, amount: number) =>
+    ({ line, date, desc, amount, dir: "DB", kind: "supplier", business: true, source: { file: "s.pdf", line } }) as const;
+  const rec = reconcile(
+    [exp("2026-10-12", "Ayam", 1_000_000, "C2"), exp("2026-10-14", "Telur", 900_000, "C3"), exp("2026-10-13", "Beras", 1_260_000, "C4")],
+    [debit(1, "2026-10-12", "TRF KE PT AYAM JAYA", 1_000_000), debit(2, "2026-10-13", "TRF KE CV BERAS MAKMUR", 1_620_000)],
+  );
+  const sup = rec.flags.filter((f) => f.kind === "supplier_unmatched");
+  assert.deepEqual(sup.map((f) => f.excel.map((s) => s.cell)), [["C4"]]); // Ayam is paid by line 1; Beras is closer than Telur
+});

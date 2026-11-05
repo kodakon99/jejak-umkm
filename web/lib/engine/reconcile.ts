@@ -165,9 +165,14 @@ export function reconcile(rows: LedgerRow[], bank: BankLine[], lang: Lang = "id"
   //    a. Payments to a company or shop should match an expense row within a few days.
   const expenses = rows.filter((r) => r.channel === "expense");
   const near = (e: LedgerRow, b: BankLine) => Math.abs(Date.parse(e.date) - Date.parse(b.date)) <= 3 * 864e5;
-  for (const b of bank.filter((b) => b.kind === "supplier" && b.dir === "DB" && !repeats.has(b))) {
+  const debits = bank.filter((b) => b.kind === "supplier" && b.dir === "DB" && !repeats.has(b));
+  const paid = (e: LedgerRow) => debits.some((b) => e.amount === b.amount && near(e, b));
+  for (const b of debits) {
     if (expenses.some((e) => e.amount === b.amount && near(e, b))) continue;
-    const typo = expenses.find((e) => near(e, b) && e.amount != null && Math.abs(e.amount - b.amount) / b.amount < 0.5);
+    const off = (e: LedgerRow) => Math.abs(e.amount! - b.amount);
+    const typo = expenses
+      .filter((e) => e.amount != null && near(e, b) && !paid(e) && off(e) / b.amount < 0.5)
+      .reduce<LedgerRow | undefined>((best, e) => (best && off(best) <= off(e) ? best : e), undefined);
     flags.push({
       id: `sup-${b.line}`, kind: "supplier_unmatched", severity: "cek", dates: [b.date],
       title: t(`Pembayaran ke usaha lain ${shortDate(b.date)} tidak ada di Excel`, `Payment to a business on ${shortDate(b.date)} is not in Excel`),
