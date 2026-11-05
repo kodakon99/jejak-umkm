@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { rp, useStore } from "@/lib/store";
 import { businessProfile, KUR_DOCUMENTS, SITE_VISIT } from "@/lib/engine/coach";
+import { partnerActivity } from "@/lib/engine/partners";
 import { businessTypeLabel, Icon } from "../ui";
 
 export default function Paket() {
@@ -34,6 +35,8 @@ export default function Paket() {
   const synthetic = /owner_recap_template|bank_statement_sample/.test(imported.excelFile + imported.bankFile);
   const name = profile.businessName || t("Usaha", "Business");
   const type = businessTypeLabel(t, profile.businessType);
+  const partners = partnerActivity(profile.partners.filter((p) => p.name.trim()), imported.bank, imported.rows);
+  const FOUND = { both: t("Bank dan Excel", "Bank and Excel"), bank: t("Hanya di bank", "Bank only"), excel: t("Hanya di Excel", "Excel only") };
 
   return (
     <>
@@ -65,7 +68,7 @@ export default function Paket() {
 
         <div className="section">
           <h2>{t("Profil usaha", "Business profile")}</h2>
-          <p style={{ maxWidth: "65ch" }}>{businessProfile({ businessType: type, ownerName: profile.ownerName || t("pemilik", "the owner"), monthsOperating: profile.monthsOperating, supplier: profile.supplier }, rec, t)}</p>
+          <p style={{ maxWidth: "65ch" }}>{businessProfile({ businessType: type, ownerName: profile.ownerName || t("pemilik", "the owner"), monthsOperating: profile.monthsOperating, partners: profile.partners }, rec, t)}</p>
           <div className="totals">
             <div><small>{t("Total penjualan", "Total sales")}</small><b>{rp(cash + qris)}</b></div>
             <div><small>{t("Tunai", "Cash")}</small><b>{rp(cash)}</b></div>
@@ -130,10 +133,34 @@ export default function Paket() {
         </div>
 
         <div className="section">
-          <h2>{t("Kontak yang bisa dihubungi", "Contact the officer can call")}</h2>
-          <p>{profile.supplier
-            ? <>{t("Supplier utama", "Main supplier")}: <b>{profile.supplier}</b>{profile.supplierPhone ? `, ${profile.supplierPhone}` : ""}</>
-            : <span className="small">{t("Belum diisi. Tambahkan di langkah Kenalan.", "Not filled in yet. Add it on the About step.")}</span>}</p>
+          <h2>{t("Supplier dan pembeli", "Suppliers and buyers")}</h2>
+          {partners.length === 0 && <p className="small">{t("Belum diisi. Tambahkan di langkah Kenalan.", "Not filled in yet. Add them on the About step.")}</p>}
+          {partners.length > 0 && <p className="small" style={{ marginBottom: 8 }}>{t(
+            "Transaksi dengan setiap supplier dan pembeli, dicari dari nama mereka di mutasi rekening dan catatan pengeluaran. Petugas bisa menelepon mereka untuk memastikan.",
+            "Transactions with each supplier and buyer, found by their name in the bank statement and the expense records. The officer can phone them to confirm.")}</p>}
+          {partners.map(({ partner: p, txns, totalIn, totalOut }, i) => (
+            <div className="partner-block" key={i}>
+              <h3>{p.name} <span className="small">· {p.role === "supplier" ? "Supplier" : t("Pembeli", "Buyer")}{p.phone ? ` · ${p.phone}` : ""}</span></h3>
+              <p className="small">{txns.length
+                ? t(`${txns.length} transaksi`, `${txns.length} ${txns.length === 1 ? "transaction" : "transactions"}`) + (totalOut ? ` · ${t("dibayar", "paid out")} ${rp(totalOut)}` : "") + (totalIn ? ` · ${t("diterima", "received")} ${rp(totalIn)}` : "")
+                : t("Tidak ada transaksi atas nama ini di mutasi atau Excel.", "No transactions under this name in the statement or Excel.")}</p>
+              {txns.length > 0 && (
+                <div className="tbl-wrap"><table className="tbl">
+                  <thead><tr><th>{t("Tanggal", "Date")}</th><th>{t("Keterangan", "Description")}</th><th className="num">{t("Nominal", "Amount")}</th><th>{t("Baris mutasi", "Statement line")}</th><th>{t("Sel Excel", "Excel cell")}</th><th>{t("Ditemukan di", "Found in")}</th></tr></thead>
+                  <tbody>{txns.map((x, j) => (
+                    <tr key={j}>
+                      <td>{fmtDate(x.date)}</td>
+                      <td>{x.desc}</td>
+                      <td className="num">{x.dir === "out" ? "−" : "+"}{rp(x.amount)}</td>
+                      <td>{x.bank?.line ?? "—"}</td>
+                      <td>{x.excel ? `${x.excel.sheet} ${x.excel.cell}` : "—"}</td>
+                      <td className={x.found === "both" ? undefined : "st-cek"}>{FOUND[x.found]}</td>
+                    </tr>
+                  ))}</tbody>
+                </table></div>
+              )}
+            </div>
+          ))}
         </div>
 
         <p className="small section">{t(

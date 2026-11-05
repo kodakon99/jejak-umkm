@@ -12,7 +12,7 @@ Next.js 16 (App Router) + TypeScript, plain CSS (no Tailwind), SheetJS for Excel
 ## Users
 Indonesian micro business owners (UMKM: warung, food stalls, small retail), 6+ months operating, wanting Rp10–50M through KUR Mikro. MVP user is Segment A: owners who write cash sales in a handwritten book, then recap daily in a free Excel template, and take cash and QRIS into one bank account. Confirmed: younger and app-savvy (like the three interviewed owners), so denser screens are fine. Bahasa Indonesia, informal register.
 
-Secondary (not app users): bank micro/KUR officers who sample the receipt pack, and the main supplier or buyer an officer may phone.
+Secondary (not app users): bank micro/KUR officers who sample the receipt pack, and the suppliers or buyers an officer may phone.
 
 ## Product Purpose
 A coach, not a credit score. It tells the owner whether they would pass KUR prescreening, which gate blocks them and when they can be ready, and turns their existing Excel recap and bank statement into a cross-verified receipt pack an officer can check in minutes. Success: owners find blockers before applying (a rejection means waiting at least 6 months), and officers verify faster.

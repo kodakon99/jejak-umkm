@@ -6,6 +6,7 @@ import { readExcel, readBankCsv, readBankPdf, type PdfText } from "./read.ts";
 import { reconcile } from "./reconcile.ts";
 import { evaluate, type Answers } from "./gates.ts";
 import { actionPlan } from "./coach.ts";
+import { mentions, partnerActivity } from "./partners.ts";
 import * as XLSX from "xlsx";
 
 const root = new URL("../../../", import.meta.url);
@@ -205,7 +206,9 @@ test("Test 2 - Selisih: duplicate, blank, unusual, bank-only and Excel-only are 
   const got = rec.flags.map((f) => `${f.kind}@${f.dates.length > 1 ? f.dates[0] + ".." : f.dates[0]}`).sort();
   assert.deepEqual(got, [
     "bank_duplicate@2026-10-22", // QR payment posted twice
+    "bank_only@2026-10-08", // buyer's transfer, noted in Excel but not in sales
     "bank_only@2026-10-17", // Rp15jt in from an unknown sender
+    "bank_only@2026-10-29", // buyer's second transfer
     "blank@2026-10-21",
     "cash_week@2026-10-05..", "cash_week@2026-10-19..",
     "duplicate@2026-10-23",
@@ -228,4 +231,58 @@ test("supplier typo hint points at the closest unpaid expense, not the first nea
   );
   const sup = rec.flags.filter((f) => f.kind === "supplier_unmatched");
   assert.deepEqual(sup.map((f) => f.excel.map((s) => s.cell)), [["C4"]]); // Ayam is paid by line 1; Beras is closer than Telur
+});
+
+// ---------- suppliers and buyers: who the business traded with, on which day ----------
+test("partner names match bank wording, including names the bank cut off", () => {
+  assert.ok(mentions("Transfer BI Fast Ke BCA PT SUMBER PANGAN JAY 5270318842", "PT. Sumber Pangan Jaya")); // truncated at 20 chars
+  assert.ok(mentions("Transfer BI Fast Ke BCA PT SUMBER PANGAN JAY 5270318842", "sumber pangan jaya")); // no PT, lower case
+  assert.ok(!mentions("Transfer BI Fast Ke BCA PT SUMBER REJEKI 111", "PT Sumber Pangan Jaya")); // different company
+  assert.ok(!mentions("Biaya transfer BI Fast", "PT")); // a legal form alone is not a name
+});
+
+test("Test 2 - Selisih: each supplier's transactions, by day and where they were found", { skip: noTestSets }, async () => {
+  const dir = "sample document/Test 2 - Selisih/";
+  const x = readExcel("x.xlsx", file(dir + "Laporan_Keuangan_Warung_Okt2026_selisih.xlsx"));
+  const bank = await readPdf(dir + "e-Statement_Okt2026_selisih.pdf");
+  const [sumber, ayam, grosir, kantor] = partnerActivity([
+    { name: "PT Sumber Pangan Jaya", role: "supplier", phone: "" },
+    { name: "CV Ayam Segar Makmur", role: "supplier", phone: "" },
+    { name: "Toko Grosir Makmur", role: "supplier", phone: "" },
+    { name: "PT Kantor Maju Bersama", role: "buyer", phone: "" },
+  ], bank, x.rows);
+  const view = (a: typeof sumber) => a.txns.map((t) => `${t.date} ${t.dir} ${t.amount} ${t.found}`);
+  // Oracle: generate_test_documents.py SUPPLIERS + KUNCI_JAWABAN.md (13 Oct typed 1.260.000; 20 Oct and 22 Oct never recorded).
+  assert.deepEqual(view(sumber), [
+    "2026-10-06 out 1850000 both",
+    "2026-10-13 out 1620000 bank",
+    "2026-10-13 out 1260000 excel",
+    "2026-10-27 out 1780000 both",
+  ]);
+  assert.deepEqual(view(ayam), ["2026-10-20 out 2140000 bank"]);
+  assert.deepEqual(view(grosir), ["2026-10-22 out 487500 bank", "2026-10-22 out 487500 bank"]); // posted twice by the bank
+  assert.equal(sumber.totalOut, 1850000 + 1620000 + 1260000 + 1780000);
+  // Oracle: BUYER_ORDERS in the generator; the bank cuts the name to "PT KANTOR MAJU BERSA".
+  assert.deepEqual(view(kantor), ["2026-10-08 in 2400000 bank", "2026-10-29 in 1850000 bank"]);
+  assert.equal(kantor.totalIn, 2400000 + 1850000);
+});
+
+test("a buyer's transfer in is listed as money received", () => {
+  const line = { line: 7, date: "2026-10-09", desc: "Transfer BI Fast Dari BCA PT KANTOR MAJU BERSAMA 123", amount: 2_400_000, dir: "CR", kind: "supplier", business: true, source: { file: "s.pdf", line: 7 } } as const;
+  const [buyer] = partnerActivity([{ name: "PT Kantor Maju Bersama", role: "buyer", phone: "0812" }], [line], []);
+  assert.deepEqual(buyer.txns.map((t) => [t.dir, t.amount, t.found, t.bank?.line]), [["in", 2_400_000, "bank", 7]]);
+  assert.equal(buyer.totalIn, 2_400_000);
+});
+
+test("a payment is never backed by an Excel row that names another partner", () => {
+  const debit = (line: number, date: string, desc: string) => ({ line, date, desc, amount: 500_000, dir: "DB", kind: "supplier", business: true, source: { file: "s.pdf", line } } as const);
+  const row = (cell: string, date: string, item: string) => ({ date, channel: "expense", amount: 500_000, item, source: { file: "x.xlsx", sheet: "Okt", cell }, sig: cell, confidence: 1 } as const);
+  const partners = [{ name: "Toko Alfa Jaya", role: "supplier", phone: "" }, { name: "Toko Beta Sentosa", role: "supplier", phone: "" }] as const;
+  // A's 10 Oct transfer was never typed in Excel; the 11 Oct row is B's, and B has no bank line.
+  const [a, b] = partnerActivity([...partners], [debit(1, "2026-10-10", "TRF KE TOKO ALFA JAYA")], [row("E5", "2026-10-11", "Bayar Toko Beta Sentosa")]);
+  assert.deepEqual(a.txns.map((t) => t.found), ["bank"]);
+  assert.deepEqual(b.txns.map((t) => [t.found, t.excel?.cell]), [["excel", "E5"]]);
+  // One unnamed row cannot back two partners' payments.
+  const [a2, b2] = partnerActivity([...partners], [debit(1, "2026-10-10", "TRF KE TOKO ALFA JAYA"), debit(2, "2026-10-11", "TRF KE TOKO BETA SENTOSA")], [row("E6", "2026-10-11", "Belanja bahan")]);
+  assert.deepEqual([...a2.txns, ...b2.txns].map((t) => t.found), ["both", "bank"]);
 });
