@@ -6,7 +6,7 @@ Test 2 - Selisih: planted errors (see KUNCI_JAWABAN.md written next to the files
 The PDF copies the LAYOUT of a common Indonesian e-Statement (blue header band,
 summary box, No/Tanggal/Keterangan/Nominal/Saldo table). Bank name, people and
 numbers are fictional and every page is marked as synthetic test data.
-A CSV of the same statement is written too, because the app reads CSV today.
+A CSV of the same statement is written too; the app reads both.
 
 Needs: openpyxl, reportlab.  Run: python3 generate_test_documents.py
 """

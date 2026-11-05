@@ -11,6 +11,7 @@ All data is invented for testing: a fictional warung, October 2026. Layouts are 
 | `owner_recap_templateA.xlsx` | Owner Excel, 3 sheets: Penjualan Harian, Pengeluaran, Stok. Contains planted errors |
 | `owner_recap_templateB.xlsx` | Same business in a different layout: one "Kas" sheet, merged title row, header on row 4, running Saldo. Clean control |
 | `generate_samples.py` | Regenerates everything (seeded, so output is repeatable) |
+| `generate_test_documents.py` | Builds two upload test sets (Excel + bank e-Statement PDF and CSV): "Test 1 - Cocok" (agree) and "Test 2 - Selisih" (planted cases, answer key in `KUNCI_JAWABAN.md`). Writes to the gitignored `sample document/` folder. Needs openpyxl and reportlab |
 
 ## Planted errors in template A (what the Reconciler should find)
 
