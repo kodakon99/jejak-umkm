@@ -5,11 +5,11 @@ import { partnerActivity, type Partner } from "@/lib/engine/partners";
 import { BUSINESS_TYPES, Choice, Icon } from "./ui";
 
 export default function Kenalan() {
-  const { profile, imported, setProfile, t } = useStore();
+  const { profile, imported, rows, setProfile, t } = useStore();
   const partners = profile.partners;
   const setPartner = (i: number, p: Partial<Partner>) => setProfile({ partners: partners.map((x, j) => (j === i ? { ...x, ...p } : x)) });
   // Once files are imported, show how many transactions each name finds, so the owner can fix the spelling.
-  const found = imported ? partnerActivity(partners, imported.bank, imported.rows) : null;
+  const found = imported ? partnerActivity(partners, imported.bank, rows) : null;
   const num = (k: "monthsOperating" | "loanAmount") => (e: React.ChangeEvent<HTMLInputElement>) =>
     setProfile({ [k]: Number(e.target.value.replace(/\D/g, "")) || 0 });
 

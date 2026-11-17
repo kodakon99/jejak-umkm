@@ -7,6 +7,7 @@ import { reconcile } from "./reconcile.ts";
 import { evaluate, type Answers } from "./gates.ts";
 import { actionPlan } from "./coach.ts";
 import { mentions, partnerActivity } from "./partners.ts";
+import { applyFixes, shiftFormula, writeWorkbook, type Fix } from "./fix.ts";
 import * as XLSX from "xlsx";
 
 const root = new URL("../../../", import.meta.url);
@@ -285,4 +286,26 @@ test("a payment is never backed by an Excel row that names another partner", () 
   // One unnamed row cannot back two partners' payments.
   const [a2, b2] = partnerActivity([...partners], [debit(1, "2026-10-10", "TRF KE TOKO ALFA JAYA"), debit(2, "2026-10-11", "TRF KE TOKO BETA SENTOSA")], [row("E6", "2026-10-11", "Belanja bahan")]);
   assert.deepEqual([...a2.txns, ...b2.txns].map((t) => t.found), ["both", "bank"]);
+});
+
+test("fixes: correcting template A's three planted errors leaves no flags, and the file re-opens", () => {
+  const cash19 = B.rows.find((r) => r.date === "2026-10-19" && r.channel === "cash")!.amount;
+  const sheet = "Penjualan Harian", at = "2026-11-17T00:00:00Z";
+  const fixes: Fix[] = [
+    { flag: "qris-13", sheet, at, set: { cell: "C13", from: 475_000, to: 175_000 } },
+    { flag: "blank-2026-10-19-cash", sheet, at, set: { cell: "B20", from: null, to: cash19 } },
+    { flag: "dup-2026-10-23", sheet, at, dropRow: 25 },
+  ];
+  const out = writeWorkbook(applyFixes(file("owner_recap_templateA.xlsx"), fixes));
+  const fixed = readExcel("fixed.xlsx", new Uint8Array(out));
+  assert.deepEqual(reconcile(fixed.rows, bank).flags, []);
+  assert.equal(fixed.rows.filter((r) => r.date === "2026-10-23").length, 2); // one cash + one QRIS row left
+});
+
+test("fixes: formulas follow inserted and deleted rows", () => {
+  assert.equal(shiftFormula("SUM(F6:F15)", "Pengeluaran", "Pengeluaran", 16, 1), "SUM(F6:F16)"); // insert at the end of the table grows the total
+  assert.equal(shiftFormula("Pengeluaran!F16", "Laba Rugi", "Pengeluaran", 16, 1), "Pengeluaran!F17");
+  assert.equal(shiftFormula("'Penjualan Harian'!C39", "Laba Rugi", "Penjualan Harian", 30, -1), "'Penjualan Harian'!C38");
+  assert.equal(shiftFormula("SUM(C31:D31)", "Penjualan Harian", "Penjualan Harian", 30, -1), "SUM(C30:D30)");
+  assert.equal(shiftFormula("B8-B11", "Laba Rugi", "Pengeluaran", 5, 1), "B8-B11"); // other sheet untouched
 });

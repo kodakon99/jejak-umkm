@@ -3,10 +3,10 @@ import Link from "next/link";
 import { rp, useStore } from "@/lib/store";
 import { businessProfile, KUR_DOCUMENTS, SITE_VISIT } from "@/lib/engine/coach";
 import { partnerActivity } from "@/lib/engine/partners";
-import { businessTypeLabel, Icon } from "../ui";
+import { businessTypeLabel, fixText, Icon } from "../ui";
 
 export default function Paket() {
-  const { rec, profile, imported, resolutions, now, t, fmtDate, fmtStamp } = useStore();
+  const { rec, profile, imported, rows, fixes, resolutions, now, t, fmtDate, fmtStamp } = useStore();
   const STATUS = { cocok: t("Cocok", "Matches"), selisih: t("Selisih", "Difference"), cek: t("Perlu dicek", "Worth a look"), menunggu: t("Belum bisa dicek", "Can't check yet") };
 
   if (!rec || !imported) {
@@ -30,12 +30,12 @@ export default function Paket() {
     const ds = rec.days.filter((d) => d.date.startsWith(m));
     return { m, cash: ds.reduce((s, d) => s + d.cash, 0), qris: ds.reduce((s, d) => s + d.qris, 0), cocok: ds.filter((d) => d.status === "cocok").length, n: ds.length };
   });
-  const cellsFor = (date: string) => imported.rows.filter((r) => r.date === date && r.channel !== "expense").map((r) => r.source.cell);
+  const cellsFor = (date: string) => rows.filter((r) => r.date === date && r.channel !== "expense").map((r) => r.source.cell);
   const open = rec.flags.filter((f) => !resolutions[f.id]).length;
   const synthetic = /owner_recap_template|bank_statement_sample/.test(imported.excelFile + imported.bankFile);
   const name = profile.businessName || t("Usaha", "Business");
   const type = businessTypeLabel(t, profile.businessType);
-  const partners = partnerActivity(profile.partners.filter((p) => p.name.trim()), imported.bank, imported.rows);
+  const partners = partnerActivity(profile.partners.filter((p) => p.name.trim()), imported.bank, rows);
   const FOUND = { both: t("Bank dan Excel", "Bank and Excel"), bank: t("Hanya di bank", "Bank only"), excel: t("Hanya di Excel", "Excel only") };
 
   return (
@@ -125,6 +125,15 @@ export default function Paket() {
           )}
         </div>
 
+        {fixes.length > 0 && (
+          <div className="section">
+            <h2>{t("Yang dibetulkan pemilik di Excel", "What the owner corrected in the Excel")}</h2>
+            <table className="tbl"><tbody>{fixes.map((f, i) => (
+              <tr key={i}><td>{fixText(t, f)}</td><td className="small">{fmtStamp(f.at)}</td></tr>
+            ))}</tbody></table>
+          </div>
+        )}
+
         <div className="section">
           <h2>{t("Transaksi bukan usaha (disisihkan)", "Non-business transactions (set aside)")}</h2>
           <table className="tbl"><tbody>{rec.excluded.map((b) => (
@@ -164,8 +173,8 @@ export default function Paket() {
         </div>
 
         <p className="small section">{t(
-          `Disusun dari ${imported.excelFile} dan ${imported.bankFile}. Jejak hanya menyusun catatan pemilik dan tidak membuat atau mengubah angka. Dokumen ini bukan penilaian kredit.`,
-          `Built from ${imported.excelFile} and ${imported.bankFile}. Jejak only organises the owner's records and never creates or changes a number. This document is not a credit assessment.`)} {now && <>{t("Dicetak", "Printed")} {fmtStamp(now, { dateStyle: "long", timeStyle: "short" })}.</>}</p>
+          `Disusun dari ${imported.excelFile} dan ${imported.bankFile}. Jejak hanya menyusun catatan pemilik; angka yang berubah hanya yang dibetulkan pemilik sendiri, tercantum di atas. Dokumen ini bukan penilaian kredit.`,
+          `Built from ${imported.excelFile} and ${imported.bankFile}. Jejak only organises the owner's records; the only changed numbers are the owner's own corrections, listed above. This document is not a credit assessment.`)} {now && <>{t("Dicetak", "Printed")} {fmtStamp(now, { dateStyle: "long", timeStyle: "short" })}.</>}</p>
       </article>
 
       <div className="no-print">

@@ -84,8 +84,9 @@ function toAmount(v: unknown): number | null {
   return null;
 }
 
-export function readExcel(file: string, data: ArrayBuffer | Uint8Array) {
-  const wb = XLSX.read(data, { type: "array" });
+export const readExcel = (file: string, data: ArrayBuffer | Uint8Array) => readWorkbook(file, XLSX.read(data, { type: "array" }));
+
+export function readWorkbook(file: string, wb: XLSX.WorkBook) {
   const mappings: SheetMapping[] = [];
   const rows: LedgerRow[] = [];
   const skipped: Source[] = []; // date cells that hold something date-like we could not read
