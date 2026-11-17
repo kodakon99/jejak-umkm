@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, type ReactNode } from "react";
-import { useStore } from "@/lib/store";
+import { rp, useStore } from "@/lib/store";
+import type { Fix } from "@/lib/engine/fix";
 import type { Lang, T } from "@/lib/i18n";
 
 export const STEPS: { href: string; label: [string, string] }[] = [
@@ -103,3 +104,11 @@ export const VERDICT = (t: T) => ({
 });
 
 export const YES_NO = (t: T): ["ya" | "tidak", string][] => [["tidak", t("Tidak", "No")], ["ya", t("Ya", "Yes")]];
+
+// One line per change the owner made to their Excel, for the match page and the evidence pack.
+export const fixText = (t: T, f: Fix) => {
+  const val = (n: number | null) => (n == null ? t("kosong", "blank") : rp(n));
+  if ("set" in f) return `${f.sheet} ${f.set.cell}: ${val(f.set.from)} → ${val(f.set.to)}`;
+  if ("dropRow" in f) return t(`${f.sheet}: baris ${f.dropRow} dihapus (tercatat dua kali)`, `${f.sheet}: row ${f.dropRow} deleted (recorded twice)`);
+  return t(`${f.sheet}: baris baru, ${f.addRow.label}`, `${f.sheet}: new row, ${f.addRow.label}`);
+};

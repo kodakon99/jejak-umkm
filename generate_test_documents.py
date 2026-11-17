@@ -58,6 +58,9 @@ CASH_EXP = [  # paid from the till, never on the bank statement
     (D(2026, 10, 30), "Upah harian pembantu", "Gaji", 600_000),
 ]
 PLN = (D(2026, 10, 10), 200_000)  # token listrik, paid from the bank account
+# T2: a catering client paying by transfer. The owner notes the order in Excel but never adds the amount to sales.
+BUYER = "PT KANTOR MAJU BERSAMA"
+BUYER_ORDERS = [(D(2026, 10, 8), "14:12:40", 2_400_000, 40), (D(2026, 10, 29), "15:03:18", 1_850_000, 30)]  # date, time, amount, boxes
 MONDAYS = [d for d in days if d.weekday() == 0]
 
 
@@ -105,6 +108,9 @@ def bank_events(errors):
     ev.append((D(2026, 10, 18), "14:03:55", ["Top-up e-money", "6032982811094471"], -100_000))
     ev.append((D(2026, 10, 24), "09:20:44", ["Penarikan tunai di ATM", f"{BANK} JKT PASAR TEBET 01"], -300_000))
     ev.append((D(2026, 10, 13), "23:59:59", ["Biaya administrasi kartu debit"], -5_500))
+    if errors:  # T2: buyer transfers in (no rng use, so other times stay the same)
+        for d, tm, amt, _ in BUYER_ORDERS:
+            ev.append((d, tm, ["Transfer BI Fast", "Dari BCA", f"{BUYER[:20]} 8830012345", "-"], amt))
     if errors:  # T2: unusual bank activity
         ev.append((D(2026, 10, 17), "02:13:48", ["Transfer BI Fast", "Dari BRI", "HENDRA GUNAWAN 0021019988776", "-"], 15_000_000))
         for _ in range(2):  # same QR payment posted twice in the same second
@@ -357,6 +363,9 @@ def write_excel(path, errors):
         cash, qris, note = truth[d]["cash"], truth[d]["qris"], ""
         if d.weekday() == 6:
             note = "Ramai, hari Minggu"
+        for od, _, _, boxes in BUYER_ORDERS:
+            if errors and d == od:
+                note = f"Pesanan katering {BUYER.title()} {boxes} kotak (dibayar transfer)"
         if errors and d == D(2026, 10, 14):
             qris += 300_000  # T2: typo, 300k too high
         if errors and d == D(2026, 10, 21):
@@ -417,7 +426,7 @@ def write_excel(path, errors):
 
 ANSWER_KEY = """# Kunci Jawaban - Test 2 (Selisih)
 
-Semua data SINTETIS. Aplikasi harus menampilkan 14 tanda ini (Test 1 - Cocok: 0 tanda).
+Semua data SINTETIS. Aplikasi harus menampilkan 16 tanda ini (Test 1 - Cocok: 0 tanda).
 
 | Kasus | Tanggal | Yang terjadi | Flag |
 |---|---|---|---|
@@ -433,8 +442,19 @@ Semua data SINTETIS. Aplikasi harus menampilkan 14 tanda ini (Test 1 - Cocok: 0 
 | 4. Hanya di bank | 20 Okt | Transfer ke CV AYAM SEGAR MAKMUR Rp2.140.000 tidak dicatat | `supplier_unmatched` |
 | 4. Hanya di bank | 22 Okt | Belanja QR di TOKO GROSIR MAKMUR tidak dicatat | `supplier_unmatched` |
 | 4. Hanya di bank | 17 Okt | Uang masuk Rp15.000.000 dari HENDRA GUNAWAN | `bank_only` |
+| 4. Hanya di bank | 8 Okt | Pembeli PT KANTOR MAJU BERSAMA transfer Rp2.400.000; Excel hanya mencatat pesanan di Keterangan | `bank_only` |
+| 4. Hanya di bank | 29 Okt | Pembeli yang sama transfer Rp1.850.000; nominalnya juga tidak masuk penjualan | `bank_only` |
 | 5. Hanya di Excel | 7 Okt | QRIS tercatat, settlement tidak ada di bank | `qris_missing` |
 | 5. Hanya di Excel | 14 Okt | QRIS di Excel Rp300.000 lebih besar dari yang cair | `qris_mismatch` |
+
+## Supplier dan pembeli (isi di langkah Kenalan untuk mencoba)
+
+| Nama | Peran | Yang muncul di Paket bukti |
+|---|---|---|
+| PT Sumber Pangan Jaya | Supplier | 4 transaksi: 6 & 27 Okt cocok bank+Excel; 13 Okt hanya bank (Rp1.620.000) dan hanya Excel (Rp1.260.000) |
+| CV Ayam Segar Makmur | Supplier | 20 Okt Rp2.140.000, hanya di bank |
+| Toko Grosir Makmur | Supplier | 22 Okt Rp487.500 dua kali, hanya di bank |
+| PT Kantor Maju Bersama | Pembeli | 8 Okt +Rp2.400.000 dan 29 Okt +Rp1.850.000, hanya di bank |
 
 ## Definisi "tidak biasa" (semua berstatus "layak dicek", bukan kesalahan)
 

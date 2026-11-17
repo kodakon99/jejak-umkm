@@ -263,3 +263,10 @@ details > div { font-size: var(--t-sm); color: var(--muted); margin-top: var(--s
   .panel, .totals div { background: #fff; }
   a { color: inherit; text-decoration: none; }
 }
+
+.partner { display: grid; gap: var(--s2); }
+.partner-row { display: flex; flex-wrap: wrap; gap: var(--s2); align-items: center; }
+.partner-row .input { flex: 1 1 140px; width: auto; }
+.partner-row .btn { flex: 0 0 auto; }
+.partner-block + .partner-block { margin-top: var(--s5); }
+.partner-block h3 { font-size: var(--t-md); margin-bottom: var(--s1); }

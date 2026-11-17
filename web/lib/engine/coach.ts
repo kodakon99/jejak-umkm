@@ -1,5 +1,6 @@
 // Coach stand-in: turns gate results and the reconciled ledger into plain Bahasa (or English).
 // Templated text only, citing gates that exist; swap for a grounded Claude call later.
+import type { Partner } from "./partners.ts";
 import type { Readiness, GateResult } from "./gates.ts";
 import type { Reconciliation } from "./reconcile.ts";
 import type { T } from "../i18n.ts";
@@ -39,7 +40,7 @@ export const SITE_VISIT = (t: T) => [
   t("Alamat usaha dan rumah sesuai KTP atau bisa dijelaskan", "Business and home address match the KTP, or can be explained"),
 ];
 
-export type Profile = { businessType: string; ownerName: string; monthsOperating: number; supplier: string };
+export type Profile = { businessType: string; ownerName: string; monthsOperating: number; partners: Partner[] };
 
 const rp = (n: number) => "Rp" + Math.round(n).toLocaleString("id-ID");
 
@@ -55,6 +56,9 @@ export function businessProfile(p: Profile, rec: Reconciliation, t: T = (id) => 
       `Over ${days} days, recorded sales were ${rp(cash + qris)}: cash ${rp(cash)} (${share}%) and QRIS ${rp(qris)}, an average of ${rp((cash + qris) / days)} per day.`),
     (t(`${cocok} dari ${days} hari sudah cocok dengan mutasi bank.`, `${cocok} of ${days} days match the bank statement.`) +
       (rec.flags.length ? " " + t(`${rec.flags.length} catatan selisih dicantumkan di lampiran.`, `${rec.flags.length} differences are listed in the appendix.`) : "")),
-    p.supplier ? t(`Supplier utama: ${p.supplier}.`, `Main supplier: ${p.supplier}.`) : "",
+    ...(["supplier", "buyer"] as const).map((role) => {
+      const names = p.partners.filter((x) => x.role === role && x.name.trim()).map((x) => x.name.trim()).join(", ");
+      return !names ? "" : role === "supplier" ? t(`Supplier: ${names}.`, `Suppliers: ${names}.`) : t(`Pembeli: ${names}.`, `Buyers: ${names}.`);
+    }),
   ].filter(Boolean).join(" ");
 }

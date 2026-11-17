@@ -2,10 +2,11 @@
 import Link from "next/link";
 import { rp, useStore } from "@/lib/store";
 import { businessProfile, KUR_DOCUMENTS, SITE_VISIT } from "@/lib/engine/coach";
-import { businessTypeLabel, Icon } from "../ui";
+import { partnerActivity } from "@/lib/engine/partners";
+import { businessTypeLabel, fixText, Icon } from "../ui";
 
 export default function Paket() {
-  const { rec, profile, imported, resolutions, now, t, fmtDate, fmtStamp } = useStore();
+  const { rec, profile, imported, rows, fixes, resolutions, now, t, fmtDate, fmtStamp } = useStore();
   const STATUS = { cocok: t("Cocok", "Matches"), selisih: t("Selisih", "Difference"), cek: t("Perlu dicek", "Worth a look"), menunggu: t("Belum bisa dicek", "Can't check yet") };
 
   if (!rec || !imported) {
@@ -29,11 +30,13 @@ export default function Paket() {
     const ds = rec.days.filter((d) => d.date.startsWith(m));
     return { m, cash: ds.reduce((s, d) => s + d.cash, 0), qris: ds.reduce((s, d) => s + d.qris, 0), cocok: ds.filter((d) => d.status === "cocok").length, n: ds.length };
   });
-  const cellsFor = (date: string) => imported.rows.filter((r) => r.date === date && r.channel !== "expense").map((r) => r.source.cell);
+  const cellsFor = (date: string) => rows.filter((r) => r.date === date && r.channel !== "expense").map((r) => r.source.cell);
   const open = rec.flags.filter((f) => !resolutions[f.id]).length;
   const synthetic = /owner_recap_template|bank_statement_sample/.test(imported.excelFile + imported.bankFile);
   const name = profile.businessName || t("Usaha", "Business");
   const type = businessTypeLabel(t, profile.businessType);
+  const partners = partnerActivity(profile.partners.filter((p) => p.name.trim()), imported.bank, rows);
+  const FOUND = { both: t("Bank dan Excel", "Bank and Excel"), bank: t("Hanya di bank", "Bank only"), excel: t("Hanya di Excel", "Excel only") };
 
   return (
     <>
@@ -65,7 +68,7 @@ export default function Paket() {
 
         <div className="section">
           <h2>{t("Profil usaha", "Business profile")}</h2>
-          <p style={{ maxWidth: "65ch" }}>{businessProfile({ businessType: type, ownerName: profile.ownerName || t("pemilik", "the owner"), monthsOperating: profile.monthsOperating, supplier: profile.supplier }, rec, t)}</p>
+          <p style={{ maxWidth: "65ch" }}>{businessProfile({ businessType: type, ownerName: profile.ownerName || t("pemilik", "the owner"), monthsOperating: profile.monthsOperating, partners: profile.partners }, rec, t)}</p>
           <div className="totals">
             <div><small>{t("Total penjualan", "Total sales")}</small><b>{rp(cash + qris)}</b></div>
             <div><small>{t("Tunai", "Cash")}</small><b>{rp(cash)}</b></div>
@@ -122,6 +125,15 @@ export default function Paket() {
           )}
         </div>
 
+        {fixes.length > 0 && (
+          <div className="section">
+            <h2>{t("Yang dibetulkan pemilik di Excel", "What the owner corrected in the Excel")}</h2>
+            <table className="tbl"><tbody>{fixes.map((f, i) => (
+              <tr key={i}><td>{fixText(t, f)}</td><td className="small">{fmtStamp(f.at)}</td></tr>
+            ))}</tbody></table>
+          </div>
+        )}
+
         <div className="section">
           <h2>{t("Transaksi bukan usaha (disisihkan)", "Non-business transactions (set aside)")}</h2>
           <table className="tbl"><tbody>{rec.excluded.map((b) => (
@@ -130,15 +142,39 @@ export default function Paket() {
         </div>
 
         <div className="section">
-          <h2>{t("Kontak yang bisa dihubungi", "Contact the officer can call")}</h2>
-          <p>{profile.supplier
-            ? <>{t("Supplier utama", "Main supplier")}: <b>{profile.supplier}</b>{profile.supplierPhone ? `, ${profile.supplierPhone}` : ""}</>
-            : <span className="small">{t("Belum diisi. Tambahkan di langkah Kenalan.", "Not filled in yet. Add it on the About step.")}</span>}</p>
+          <h2>{t("Supplier dan pembeli", "Suppliers and buyers")}</h2>
+          {partners.length === 0 && <p className="small">{t("Belum diisi. Tambahkan di langkah Kenalan.", "Not filled in yet. Add them on the About step.")}</p>}
+          {partners.length > 0 && <p className="small" style={{ marginBottom: 8 }}>{t(
+            "Transaksi dengan setiap supplier dan pembeli, dicari dari nama mereka di mutasi rekening dan catatan pengeluaran. Petugas bisa menelepon mereka untuk memastikan.",
+            "Transactions with each supplier and buyer, found by their name in the bank statement and the expense records. The officer can phone them to confirm.")}</p>}
+          {partners.map(({ partner: p, txns, totalIn, totalOut }, i) => (
+            <div className="partner-block" key={i}>
+              <h3>{p.name} <span className="small">· {p.role === "supplier" ? "Supplier" : t("Pembeli", "Buyer")}{p.phone ? ` · ${p.phone}` : ""}</span></h3>
+              <p className="small">{txns.length
+                ? t(`${txns.length} transaksi`, `${txns.length} ${txns.length === 1 ? "transaction" : "transactions"}`) + (totalOut ? ` · ${t("dibayar", "paid out")} ${rp(totalOut)}` : "") + (totalIn ? ` · ${t("diterima", "received")} ${rp(totalIn)}` : "")
+                : t("Tidak ada transaksi atas nama ini di mutasi atau Excel.", "No transactions under this name in the statement or Excel.")}</p>
+              {txns.length > 0 && (
+                <div className="tbl-wrap"><table className="tbl">
+                  <thead><tr><th>{t("Tanggal", "Date")}</th><th>{t("Keterangan", "Description")}</th><th className="num">{t("Nominal", "Amount")}</th><th>{t("Baris mutasi", "Statement line")}</th><th>{t("Sel Excel", "Excel cell")}</th><th>{t("Ditemukan di", "Found in")}</th></tr></thead>
+                  <tbody>{txns.map((x, j) => (
+                    <tr key={j}>
+                      <td>{fmtDate(x.date)}</td>
+                      <td>{x.desc}</td>
+                      <td className="num">{x.dir === "out" ? "−" : "+"}{rp(x.amount)}</td>
+                      <td>{x.bank?.line ?? "—"}</td>
+                      <td>{x.excel ? `${x.excel.sheet} ${x.excel.cell}` : "—"}</td>
+                      <td className={x.found === "both" ? undefined : "st-cek"}>{FOUND[x.found]}</td>
+                    </tr>
+                  ))}</tbody>
+                </table></div>
+              )}
+            </div>
+          ))}
         </div>
 
         <p className="small section">{t(
-          `Disusun dari ${imported.excelFile} dan ${imported.bankFile}. Jejak hanya menyusun catatan pemilik dan tidak membuat atau mengubah angka. Dokumen ini bukan penilaian kredit.`,
-          `Built from ${imported.excelFile} and ${imported.bankFile}. Jejak only organises the owner's records and never creates or changes a number. This document is not a credit assessment.`)} {now && <>{t("Dicetak", "Printed")} {fmtStamp(now, { dateStyle: "long", timeStyle: "short" })}.</>}</p>
+          `Disusun dari ${imported.excelFile} dan ${imported.bankFile}. Jejak hanya menyusun catatan pemilik; angka yang berubah hanya yang dibetulkan pemilik sendiri, tercantum di atas. Dokumen ini bukan penilaian kredit.`,
+          `Built from ${imported.excelFile} and ${imported.bankFile}. Jejak only organises the owner's records; the only changed numbers are the owner's own corrections, listed above. This document is not a credit assessment.`)} {now && <>{t("Dicetak", "Printed")} {fmtStamp(now, { dateStyle: "long", timeStyle: "short" })}.</>}</p>
       </article>
 
       <div className="no-print">
